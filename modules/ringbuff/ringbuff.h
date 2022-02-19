@@ -17,14 +17,14 @@ typedef struct {
 // sets head and tail correctly
 // if 'overwrite_enable' is non-zero, the head of the buffer can be overwritten when data is copied in
 // if this flag is 0, writes that would overfill the buffer return 0 and no data is copied
-void rbuff_init(ringbuff_t* rb, uint8_t* buff, size_t size, uint8_t overwrite_enable);
+void rb_init(ringbuff_t* rb, uint8_t* buff, size_t size, uint8_t overwrite_enable);
 
 // copy len bytes from buff into rb
 // returns number of bytes copied
-size_t rbuff_memcpyin(ringbuff_t* rb, uint8_t* buff, size_t len);
+size_t rb_memcpyin(ringbuff_t* rb, uint8_t* buff, size_t len);
 
 // copy len bytes from rb into buff
 // returns number of bytes copied
-size_t rbuff_memcpyout(uint8_t* buff, ringbuff_t* rb, size_t len);
+size_t rb_memcpyout(uint8_t* buff, ringbuff_t* rb, size_t len);
 
 #endif
