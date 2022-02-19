@@ -4,9 +4,8 @@
 */
 #include "main.h"
 #include "usart.h"
-#include "gps.h"
-#include "lib/common/common.h"
-#include "lib/queue/queue.h"
+#include "common.h"
+#include "queue.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>

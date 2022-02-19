@@ -59,11 +59,13 @@ Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c \
 Core/Src/system_stm32l4xx.c \
 modules/queue/queue.c \
-modules/ringbuff/ringbuff.c
+modules/ringbuff/ringbuff.c \
+modules/sys/sys.c
 
 # CPP sources
 CPP_SOURCES = \
-Core/Src/main.cpp
+Core/Src/main.cpp \
+tasks/src/init.cpp
 
 # ASM sources
 ASM_SOURCES =  \
@@ -128,10 +130,12 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32L4xx/Include \
 -IDrivers/CMSIS/Include \
 -IDrivers/CMSIS/Include \
+-Imodules \
 -Imodules/queue \
 -Imodules/ringbuff \
 -Imodules/scheduler \
--Itasks
+-Imodules/sys \
+-Itasks/include
 
 
 # compile gcc flags
