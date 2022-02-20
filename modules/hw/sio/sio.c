@@ -1,8 +1,10 @@
 /*
-*   Retarget the nosys/newlib "syscalls"
-*   Without these calling a syscall just calls an empty(?) stub
+*   Serial I/O interface for HAL
+*   Retargets _write and _read to use serial for use with stdio
+*
+*   Author: Will Merges
 */
-#include "main.h"
+#include "sio.h"
 #include "usart.h"
 #include "common.h"
 #include "queue.h"
@@ -11,21 +13,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define RX_BUFFER_SIZE 1024 // can buffer reading this many bytes per UART
-
-#define NUM_UARTS 3
-static UART_HandleTypeDef* uarts[NUM_UARTS] =
-{
-    &huart3,
-    &huart1, // mapped to "stdout"
-    &huart2
-};
-
 static queue_t* tx_queue[NUM_UARTS];
 
 static uint8_t rx_byte[NUM_UARTS];
 static uint8_t rx_buffer[NUM_UARTS][RX_BUFFER_SIZE];
 static ringbuff_t rx_rb[NUM_UARTS];
+
+void (*callback_funcs[NUM_UARTS]) ();
 
 // message type used for queueing messages
 typedef struct {
@@ -35,7 +29,7 @@ typedef struct {
 
 // does initialization for using the sys library
 // returns -1 on failure, 1 otherwise
-int sys_init() {
+int sio_init() {
     // initialize queues
     for(size_t i = 0; i < NUM_UARTS; i++) {
         tx_queue[i] = q_mkqueue(NULL);
@@ -82,7 +76,6 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
 
 
 // RX complete, called by the HAL UART IRQ
-// TODO probably want to make each uart have a function handle for other things to set
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     size_t i;
     for(i = 0; i < NUM_UARTS; i++) {
@@ -99,17 +92,17 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
         return;
     }
 
-    // TODO call some user defined callback with the byte we received
+    if(callback_funcs[i]) {
+        callback_funcs[i]();
+    }
 
     HAL_UART_Receive_IT(uarts[i], &(rx_byte[i]), 1);
 }
 
 
-// retarget _write for stdio functions to use
 // nonblocking, initiates a DMA transfer or queues it if the UART controller is busy
-// if an error happens it likely won't caught since the function will have already returned
-int _write(int file, char *buff, int len) {
-    if(file >= NUM_UARTS || file < 0) {
+int sio_write(int fd, char *buff, int len) {
+    if(fd >= NUM_UARTS || fd < 0) {
         // invalid index
         return -1;
     }
@@ -122,12 +115,12 @@ int _write(int file, char *buff, int len) {
     disable_irq;
 
     // if tx_ready is true, queue is always empty
-    if(QUEUE_EMPTY(tx_queue[file])) {
+    if(QUEUE_EMPTY(tx_queue[fd])) {
         // we can send right away
-        q_enqueue(tx_queue[file], msg);
-        HAL_UART_Transmit_DMA(uarts[file], msg->data, len);
+        q_enqueue(tx_queue[fd], msg);
+        HAL_UART_Transmit_DMA(uarts[fd], msg->data, len);
     } else {
-        q_enqueue(tx_queue[file], msg);
+        q_enqueue(tx_queue[fd], msg);
     }
 
     enable_irq;
@@ -138,8 +131,8 @@ int _write(int file, char *buff, int len) {
 
 // read a certain amount of characters
 // returns amount of characters actually read up to length len
-int _read(int file, char* buff, int len) {
-    if(file >= NUM_UARTS || file < 0) {
+int sio_read(int fd, char* buff, int len) {
+    if(fd >= NUM_UARTS || fd < 0) {
         // invalid index
         return -1;
     }
@@ -150,15 +143,27 @@ int _read(int file, char* buff, int len) {
     }
 
     // will return actual number of bytes we can read
-    return rb_memcpyout((uint8_t*)buff, &(rx_rb[file]), len);
+    return rb_memcpyout((uint8_t*)buff, &(rx_rb[fd]), len);
 }
 
+int _write(int fd, char* buff, int len) __attribute__((alias("sio_write")));
+int _read(int fd, char* buff, int len) __attribute__((alias("sio_read")));
+
 // return how many bytes are available
-size_t io_available(int file) {
-    if(file >= NUM_UARTS || file < 0) {
+size_t sio_available(int fd) {
+    if(fd >= NUM_UARTS || fd < 0) {
         // invalid index
         return 0;
     }
 
-    return rx_rb[file].len;
+    return rx_rb[fd].len;
+}
+
+void sio_attach_callback(int fd, void (*cb_func) ()) {
+    if(fd >= NUM_UARTS || fd < 0) {
+        // invalid index
+        return;
+    }
+
+    callback_funcs[fd] = cb_func;
 }
