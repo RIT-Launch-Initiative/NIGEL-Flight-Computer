@@ -7,6 +7,7 @@ void rb_init(ringbuff_t* rb, uint8_t* buff, size_t size, uint8_t overwrite_enabl
     rb->tail = 0;
     rb->ptr = buff;
     rb->max = size;
+    rb->len = 0;
     rb->overwrite_enable = overwrite_enable;
 }
 
@@ -28,6 +29,7 @@ size_t rb_memcpyin(ringbuff_t* rb, uint8_t* buff, size_t len) {
         rb->tail = (rb->tail + 1) % rb->max;
     }
 
+    rb->len += i;
     return i;
 }
 
@@ -38,8 +40,11 @@ size_t rb_memcpyout(uint8_t* buff, ringbuff_t* rb, size_t len) {
         i++;
         rb->head = (rb->head + 1) % rb->max;
         if(rb->head == rb->tail) {
+            rb->len -= i;
             return i;
         }
     }
+
+    rb->len -= i;
     return i;
 }

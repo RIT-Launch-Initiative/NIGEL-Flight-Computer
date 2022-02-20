@@ -5,10 +5,11 @@
 #include <stdlib.h>
 
 typedef struct {
-    int head; // first byte occupied at beginning (aka first byte we can read from)
-    int tail; // first byte free at end (aka first byte we can write to)
+    size_t head; // first byte occupied at beginning (aka first byte we can read from)
+    size_t tail; // first byte free at end (aka first byte we can write to)
     uint8_t* ptr; // ptr to beginning of buffer
-    int max; // max size
+    size_t max; // max size
+    size_t len; // current length
     uint8_t overwrite_enable; // whether or not the head of the ringbuffer can be overwritten
 } ringbuff_t;
 

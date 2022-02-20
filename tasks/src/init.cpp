@@ -1,4 +1,4 @@
-// needed by tiny scheduler
+// needed by scheduler
 long int ts_systime() {
     return (long int)HAL_GetTick();
 }

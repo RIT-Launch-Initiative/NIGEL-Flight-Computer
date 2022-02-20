@@ -16,7 +16,6 @@
 #define TS_ERR_TTID -1
 
 // this needs to be defined by the system!
-// the extern is unnecessary, just a reminder to define it!
 extern long int ts_systime();
 
 // priority level

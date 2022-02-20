@@ -6,24 +6,26 @@
 #include "usart.h"
 #include "common.h"
 #include "queue.h"
+#include "ringbuff.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
-// okay to initiate a write?
-int write1 = 1;
-int write2 = 1;
-int write3 = 1;
+#define RX_BUFFER_SIZE 1024 // can buffer reading this many bytes per UART
 
-// write queues
-queue_t* qw1;
-queue_t* qw2;
-queue_t* qw3;
+#define NUM_UARTS 3
+static UART_HandleTypeDef* uarts[NUM_UARTS] =
+{
+    &huart3,
+    &huart1, // mapped to "stdout"
+    &huart2
+};
 
-// write pointers
-char* wptr1;
-char* wptr2;
-char* wptr3;
+static queue_t tx_queue[NUM_UARTS];
+
+static uint8_t rx_byte[NUM_UARTS];
+static uint8_t rx_buffer[NUM_UARTS][RX_BUFFER_SIZE];
+static ringbuff_t rx_rb[NUM_UARTS];
 
 // message type used for queueing messages
 typedef struct {
@@ -31,20 +33,20 @@ typedef struct {
     uint16_t len;
 } msg_node_t;
 
-
-// declared in common/common.h
 // does initialization for using the sys library
 // returns -1 on failure, 1 otherwise
 int sys_init() {
     // initialize queues
-    // TODO perhaps sort and add priorities?
-    qw1 = q_mkqueue(NULL);
-    qw2 = q_mkqueue(NULL);
-    qw3 = q_mkqueue(NULL);
+    for(size_t i = 0; i < NUM_UARTS; i++) {
+        tx_queue[i] = q_mkqueue(NULL);
 
-    // something didn't initialize
-    if(!qw1 || !qw2 || !qw3) {
-        return -1;
+        if(!tx_queue[i]) {
+            // failure to allocate
+            return -1;
+        }
+
+        rb_init(rx_rb[i], rx_buffer[i], RX_BUFFER_SIZE, 1);
+        HAL_UART_Receive_IT(uarts[i], &(rx_byte[i]), 1);
     }
 
     return 1;
@@ -53,27 +55,28 @@ int sys_init() {
 
 // TX complete, called by the HAL UART IRQ
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
-    void* next = NULL;
-    if(huart == &huart1) {
-        write1 = 1;
-        next = q_dequeue(qw1);
-        free(wptr1);
-        wptr1 = (char*)((msg_node_t*)next)->data;
-    } else if(huart == &huart2) {
-        write2 = 1;
-        next = q_dequeue(qw2);
-        free(wptr2);
-        wptr2 = (char*)((msg_node_t*)next)->data;
-    } else if(huart == &huart3) {
-        write3 = 1;
-        next = q_dequeue(qw3);
-        free(wptr3);
-        wptr3 = (char*)((msg_node_t*)next)->data;
+    size_t i;
+    for(i = 0; i < NUM_UARTS; i++) {
+        if(huart == uarts[i]) {
+            break;
+        }
     }
 
-    if(next) {
-        HAL_UART_Transmit_DMA(huart, ((msg_node_t*)next)->data, ((msg_node_t*)next)->len);
-        free(next);
+    #ifdef DEBUG
+    printf("software error: got callback for unknown UART\r\n");
+    return;
+    #endif
+
+    // the message we just sent
+    msg_node_t* msg = (msg_node_t*)q_dequeue(tx_queue[i]);
+    free(msg->data);
+    free(msg);
+
+    // next message to send (if available)
+    msg = (msg_node_t*)q_peek(tx_queue[i]);
+
+    if(msg) {
+        HAL_UART_Transmit_DMA(uarts[i], msg->data, msg->len);
     }
 }
 
@@ -81,87 +84,81 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
 // RX complete, called by the HAL UART IRQ
 // TODO probably want to make each uart have a function handle for other things to set
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-    if(huart == &huart1) {
-        // TODO (debug uart)
-    } else if(huart == &huart2) {
-        gps_RxCallback(); // from gps.c
-    } else if(huart == &huart3) {
-        // TODO (XBee uart)
+    size_t i;
+    for(i = 0; i < NUM_UARTS; i++) {
+        if(huart == uarts[i]) {
+            break;
+        }
     }
+
+    if(rb_memcpyin(rx_rb[i], &(rx_byte[i]), 1) != 1) {
+        #ifdef DEBUG
+        printf("unexpected error: ringbuff write failure\r\n");
+        #endif
+
+        return;
+    }
+
+    // TODO call some user defined callback with the byte we received
+
+    HAL_UART_Receive_IT(uarts[i], &(rx_byte[i]), 1);
 }
 
 
 // retarget _write for stdio functions to use
 // nonblocking, initiates a DMA transfer or queues it if the UART controller is busy
 // if an error happens it likely won't caught since the function will have already returned
-int _write(int file, char *ptr, int len) {
+int _write(int file, char *buff, int len) {
+    if(file >= NUM_UARTS || file < 0) {
+        // invalid index
+        return -1;
+    }
+
     msg_node_t* msg = (msg_node_t*)malloc(sizeof(msg_node_t));
     msg->data = (uint8_t*)malloc(sizeof(char) * len);
-    memcpy(msg->data, ptr, len);
+    memcpy(msg->data, buff, len);
     msg->len = len;
 
     disable_irq;
-    switch(file) {
-        case 0: // UART 3 (XBee)
-            if(write3) { // okay to start a tx
-                write3 = 0;
-                wptr3 = (char*)msg->data;
-                HAL_UART_Transmit_DMA(&huart3, msg->data, len);
-                free(msg);
-            } else { // busy, queue the write
-                q_enqueue(qw3, (void*)msg);
-            }
-            break;
-        case 1: // UART 1 (Debug / Camera)
-            if(write1) { // okay to start a tx
-                write1 = 0;
-                wptr1 = (char*)msg->data;
-                HAL_UART_Transmit_DMA(&huart1, msg->data, len);
-                free(msg);
-            } else { // busy, queue the write
-                q_enqueue(qw1, (void*)msg);
-            }
-            break;
-        case 2: // UART 2 (GPS)
-            if(write2) { // okay to start a tx
-                write2 = 0;
-                wptr2 = (char*)msg->data;
-                HAL_UART_Transmit_DMA(&huart2, msg->data, len);
-                free(msg);
-            } else { // busy, queue the write
-                q_enqueue(qw2, (void*)msg);
-            }
-            break;
-        default:
-            enable_irq;
-            return -1;
+
+    // if tx_ready is true, queue is always empty
+    if(Q_EMPTY(tx_queue[file])) {
+        // we can send right away
+        q_enqueue(tx_queue[file], msg);
+        HAL_UART_Transmit_DMA(uarts[file]), msg->data, len);
+    } else {
+        q_enqueue(tx_queue[file], msg);
     }
+
     enable_irq;
+
     return len;
 }
 
 
-// read a certain amount of characters (blocking)
-// probably best to stay away from (don't use stdio input functions if speed is an issue)
-int _read(int file, char* ptr, int len) {
-    switch(file) {
-        case 0: // UART 3 (XBee)
-            if(HAL_OK != HAL_UART_Receive(&huart3, (uint8_t*)ptr, len, 10)) {
-                return -1;
-            }
-            break;
-        case 1: // UART 1 (Debug / Camera)
-            if(HAL_OK != HAL_UART_Receive(&huart1, (uint8_t*)ptr, len, 10)) {
-                return -1;
-            }
-            break;
-        case 2: // UART 2 (GPS)
-            if(HAL_OK != HAL_UART_Receive(&huart2, (uint8_t*)ptr, len, 10)) {
-                return -1;
-            }
-            break;
-        default:
-            return -1;
+// read a certain amount of characters
+// returns amount of characters actually read up to length len
+int _read(int file, char* buff, int len) {
+    if(file >= NUM_UARTS || file < 0) {
+        // invalid index
+        return -1;
     }
-    return len;
+
+    if(len < 0) {
+        // invalid
+        return -1;
+    }
+
+    // will return actual number of bytes we can read
+    return rb_memcpyout((uint8_t*)buff, rx_rb[file], len);
+}
+
+// return how many bytes are available
+size_t io_available(int file) {
+    if(file >= NUM_UARTS || file < 0) {
+        // invalid index
+        return 0;
+    }
+
+    return rx_rb[file]->len;
 }
