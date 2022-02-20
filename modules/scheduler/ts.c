@@ -12,7 +12,6 @@ tiny_task_t* tasks[TS_MAX_TASKS];
 // mark a ttid, used = 1, unused = 0
 unsigned char ttid_map[TS_MAX_TASKS];
 
-
 int ts_add(tiny_task_t* task) {
     // find a free ttid
     for(int i = 0; i < TS_MAX_TASKS; i++) {

@@ -21,7 +21,7 @@ static UART_HandleTypeDef* uarts[NUM_UARTS] =
     &huart2
 };
 
-static queue_t tx_queue[NUM_UARTS];
+static queue_t* tx_queue[NUM_UARTS];
 
 static uint8_t rx_byte[NUM_UARTS];
 static uint8_t rx_buffer[NUM_UARTS][RX_BUFFER_SIZE];
@@ -45,7 +45,7 @@ int sys_init() {
             return -1;
         }
 
-        rb_init(rx_rb[i], rx_buffer[i], RX_BUFFER_SIZE, 1);
+        rb_init(&(rx_rb[i]), rx_buffer[i], RX_BUFFER_SIZE, 1);
         HAL_UART_Receive_IT(uarts[i], &(rx_byte[i]), 1);
     }
 
@@ -91,7 +91,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
         }
     }
 
-    if(rb_memcpyin(rx_rb[i], &(rx_byte[i]), 1) != 1) {
+    if(rb_memcpyin(&(rx_rb[i]), &(rx_byte[i]), 1) != 1) {
         #ifdef DEBUG
         printf("unexpected error: ringbuff write failure\r\n");
         #endif
@@ -122,10 +122,10 @@ int _write(int file, char *buff, int len) {
     disable_irq;
 
     // if tx_ready is true, queue is always empty
-    if(Q_EMPTY(tx_queue[file])) {
+    if(QUEUE_EMPTY(tx_queue[file])) {
         // we can send right away
         q_enqueue(tx_queue[file], msg);
-        HAL_UART_Transmit_DMA(uarts[file]), msg->data, len);
+        HAL_UART_Transmit_DMA(uarts[file], msg->data, len);
     } else {
         q_enqueue(tx_queue[file], msg);
     }
@@ -150,7 +150,7 @@ int _read(int file, char* buff, int len) {
     }
 
     // will return actual number of bytes we can read
-    return rb_memcpyout((uint8_t*)buff, rx_rb[file], len);
+    return rb_memcpyout((uint8_t*)buff, &(rx_rb[file]), len);
 }
 
 // return how many bytes are available
@@ -160,5 +160,5 @@ size_t io_available(int file) {
         return 0;
     }
 
-    return rx_rb[file]->len;
+    return rx_rb[file].len;
 }
