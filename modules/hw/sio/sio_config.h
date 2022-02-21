@@ -14,4 +14,13 @@ static UART_HandleTypeDef* uarts[NUM_UARTS] =
     &huart2
 };
 
+// allows file descriptors to be mapped to names
+// indices align with the above in 'uarts' array
+static const char* uart_names[NUM_UARTS] =
+{
+    "xbee_uart",
+    "debug_uart",
+    "gps_uart"
+};
+
 #endif

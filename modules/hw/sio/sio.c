@@ -167,3 +167,14 @@ void sio_attach_callback(int fd, void (*cb_func) ()) {
 
     callback_funcs[fd] = cb_func;
 }
+
+int sio_search_fd(const char* name) {
+    int fd = -1;
+    for(size_t i = 0; i < NUM_UARTS; i++) {
+        if(!strcmp(name, uart_names[i])) {
+            fd = i;
+        }
+    }
+
+    return fd;
+}
