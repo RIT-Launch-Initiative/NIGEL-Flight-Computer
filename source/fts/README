@@ -1,0 +1,2 @@
+Handles the flight termination system
+Code is called from ground_cmd module

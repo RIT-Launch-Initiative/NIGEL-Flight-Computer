@@ -1,0 +1,2 @@
+Parses commands from IO sources (init function sets up hooks)
+Maps commands to functions to perform

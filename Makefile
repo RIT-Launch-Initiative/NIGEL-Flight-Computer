@@ -58,20 +58,20 @@ Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c \
 Core/Src/system_stm32l4xx.c \
-modules/queue/queue.c \
-modules/ringbuff/ringbuff.c \
-modules/hw/sio/sio.c \
-modules/scheduler/ts.c \
-modules/hw/watchdog/watchdog.c \
-modules/net/udp.c \
 Core/Src/gpio.c \
 Core/Src/usart.c \
-Core/Src/tim.c
+Core/Src/tim.c \
+source/modules/queue/queue.c \
+source/modules/ringbuff/ringbuff.c \
+source/modules/sio/sio.c \
+source/modules/scheduler/ts.c \
+source/modules/watchdog/watchdog.c \
+source/modules/net/udp.c
 
 # CPP sources
 CPP_SOURCES = \
 Core/Src/main.cpp \
-tasks/src/init.cpp
+source/init/init.cpp
 
 # ASM sources
 ASM_SOURCES =  \
@@ -136,13 +136,13 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32L4xx/Include \
 -IDrivers/CMSIS/Include \
 -IDrivers/CMSIS/Include \
--Imodules \
--Imodules/queue \
--Imodules/ringbuff \
--Imodules/scheduler \
--Imodules/hw/sio \
--Imodules/hw/watchdog \
--Itasks/include
+-Isource/modules \
+-Isource/modules/queue \
+-Isource/modules/ringbuff \
+-Isource/modules/scheduler \
+-Isource/modules/sio \
+-Isource/modules/watchdog \
+-Isource/init
 
 
 # compile gcc flags
