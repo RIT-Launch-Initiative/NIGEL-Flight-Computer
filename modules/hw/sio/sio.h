@@ -2,7 +2,6 @@
 #define SYS_H
 
 #include "main.h"
-#include "sio_config.h"
 
 // 'fd' refers to a descriptor corresponding to the mapping of 'uarts' in sio_config.h
 
@@ -23,6 +22,6 @@ void sio_attach_callback(int fd, void (*cb_func) ());
 // search for the file descriptor matching a name
 // names correspond to names defined in 'sio_config.h'
 // returns -1 on no match, matching fd otherwise
-int sio_search_fd(const char* name);
+int sio_search_name(const char* name);
 
 #endif

@@ -5,6 +5,7 @@
 *   Author: Will Merges
 */
 #include "sio.h"
+#include "sio_config.h"
 #include "usart.h"
 #include "common.h"
 #include "queue.h"
@@ -19,7 +20,7 @@ static uint8_t rx_byte[NUM_UARTS];
 static uint8_t rx_buffer[NUM_UARTS][RX_BUFFER_SIZE];
 static ringbuff_t rx_rb[NUM_UARTS];
 
-void (*callback_funcs[NUM_UARTS]) ();
+static void (*callback_funcs[NUM_UARTS]) ();
 
 // message type used for queueing messages
 typedef struct {
@@ -168,7 +169,7 @@ void sio_attach_callback(int fd, void (*cb_func) ()) {
     callback_funcs[fd] = cb_func;
 }
 
-int sio_search_fd(const char* name) {
+int sio_search_name(const char* name) {
     int fd = -1;
     for(size_t i = 0; i < NUM_UARTS; i++) {
         if(!strcmp(name, uart_names[i])) {
