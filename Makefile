@@ -63,6 +63,7 @@ modules/ringbuff/ringbuff.c \
 modules/hw/sio/sio.c \
 modules/scheduler/ts.c \
 modules/hw/watchdog/watchdog.c \
+modules/net/udp.c \
 Core/Src/gpio.c \
 Core/Src/usart.c \
 Core/Src/tim.c
