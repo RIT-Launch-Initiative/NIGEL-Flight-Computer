@@ -20,6 +20,7 @@
 void wd_pet(int wd);
 
 // set the counter time for the watchdog counter
+// 'cnt' is in values of ticks, where ticks is the clock rate into the timer (including prescaling/internal division)
 void wd_set_counter(int wd, uint32_t cnt);
 
 // attach a function to call when the watchdog goes off
