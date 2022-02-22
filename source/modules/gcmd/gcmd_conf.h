@@ -1,3 +1,6 @@
+/*
+*   Ground command module configuration
+*/
 #ifndef GCMD_CONF_H
 #define GCMD_CONF_H
 
