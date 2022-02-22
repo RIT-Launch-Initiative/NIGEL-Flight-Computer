@@ -30,7 +30,18 @@ typedef struct {
     uint8_t options;
     uint64_t payload; // Variable amount of data
     uint8_t checksum;
-} xb_frame_t;
+} xb_tx_frame_t;
+
+typedef struct {
+    uint8_t start_delimiter;
+    uint16_t length;
+    uint8_t frame_type;
+    uint64_t src_address_64;
+    uint16_t src_address_16;
+    uint8_t options;
+    uint64_t received;
+    uint8_t checksum;
+} xb_rx_frame_t;
 
 extern int _xb_write(uint8_t *buf, size_t len);
 
@@ -38,7 +49,7 @@ extern int _xb_write(uint8_t *buf, size_t len);
 void xb_init();
 
 // Transmit data from XBee
-xb_ret_t xb_transmit();
+xb_ret_t xb_transmit(uint8_t radius, void *payload, int (*write)(uint8_t *buf, size_t len));
 
 // Receive data to XBee
 xb_ret_t xb_receive();
