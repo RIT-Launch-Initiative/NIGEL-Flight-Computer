@@ -8,7 +8,30 @@
 #include <stdlib.h>
 #include "xbee.h"
 
-xb_ret_t xb_transmit(uint8_t radius, void *payload, int (*write)(uint8_t *buf, size_t len)) {
+typedef struct {
+    uint8_t start_delimiter;
+    uint16_t length;
+    uint8_t frame_type;
+    uint64_t dst_address_64;
+    uint16_t dst_address_16;
+    uint8_t radius;
+    uint8_t options;
+    uint64_t payload; // Variable amount of data
+    uint8_t checksum;
+} xb_tx_frame_t;
+
+typedef struct {
+    uint8_t start_delimiter;
+    uint16_t length;
+    uint8_t frame_type;
+    uint64_t src_address_64;
+    uint16_t src_address_16;
+    uint8_t options;
+    uint64_t received;
+    uint8_t checksum;
+} xb_rx_frame_t;
+
+xb_ret_t xb_tx(uint8_t* data, size_t len) {
     xb_tx_frame_t *frame = (xb_tx_frame_t *) malloc(sizeof(xb_tx_frame_t));
 
     if (frame == NULL) {
@@ -30,7 +53,13 @@ xb_ret_t xb_transmit(uint8_t radius, void *payload, int (*write)(uint8_t *buf, s
     return XB_OK;
 }
 
-xb_ret_t xb_receive() {
+void xb_attach_rx_callback(void (*rx) (uint8_t* buff, size_t len)) {
+
+
+}
+
+
+void xb_raw_recv(uint8_t* buff, size_t len) {
     xb_rx_frame_t *frame = (xb_rx_frame_t *) malloc(sizeof(xb_rx_frame_t));
 
     if (frame == NULL) {
@@ -48,6 +77,14 @@ xb_ret_t xb_receive() {
     frame->checksum = 0xFF - (sizeof(frame) - sizeof(frame->length) - sizeof(frame->start_delimiter));
 
     return XB_OK;
+}
+
+void xb_set_dst(uint64_t addr) {
+
+}
+
+xb_ret_t xb_cmd_dio(xbee_dio_t dio, xbee_dio_output_t output) {
+
 }
 
 
