@@ -14,7 +14,7 @@ typedef enum {
     XB_OK
 } xb_ret_t;
 
-typdef enum {
+typedef enum {
     XB_IO1,
     XB_IO2
 } xb_io_t;
