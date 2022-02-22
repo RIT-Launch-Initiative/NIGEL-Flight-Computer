@@ -40,9 +40,7 @@ void xb_set_dst(uint64_t addr);
 xb_ret_t xb_tx(uint8_t* data, size_t len);
 
 typedef enum {
-    XBEE_DIO0,
-    XBEE_DIO1,
-    XBEE_DIO3
+    XBEE_DIO12
 } xbee_dio_t;
 
 typedef enum {
