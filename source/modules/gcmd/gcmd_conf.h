@@ -16,13 +16,13 @@ typedef struct {
 
 // -----------------------------------------
 
-#define END_OF_GCMD_LIST {0, NULL}
 
 // MAP FUNCTIONS TO CONTROL NUMBERS
-static gcmd_entry_t gcmd_list[] = 
+
+#define NUM_GCMDS 1
+static gcmd_entry_t gcmd_list[NUM_GCMDS] =
 {
-    {1, some_function},
-    END_OF_GCMD_LIST
+    {900, NULL} // TODO link these
 };
 
 #endif

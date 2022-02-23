@@ -16,9 +16,11 @@ typedef struct {
 } gcmd_t;
 
 // init this module
-void gcmd_init();
+// return -1 on failure, 1 otherwise
+int gcmd_init();
 
 // parse a command from an input source
-void gcmd_parse(uint8_t* buff, size_t len);
+// return -1 on failure, 1 otherwise
+int gcmd_parse(uint8_t* buff, size_t len);
 
 #endif

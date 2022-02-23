@@ -66,7 +66,9 @@ source/modules/ringbuff/ringbuff.c \
 source/modules/sio/sio.c \
 source/modules/scheduler/ts.c \
 source/modules/watchdog/watchdog.c \
-source/modules/net/udp.c
+source/modules/net/udp.c \
+source/modules/hashmap/hashmap.c \
+source/modules/gcmd/gcmd.c
 
 # CPP sources
 CPP_SOURCES = \
@@ -142,7 +144,9 @@ C_INCLUDES =  \
 -Isource/modules/scheduler \
 -Isource/modules/sio \
 -Isource/modules/watchdog \
--Isource/init
+-Isource/init \
+-Isource/modules/hashmap \
+-Isource/modules/gcmd
 
 
 # compile gcc flags
