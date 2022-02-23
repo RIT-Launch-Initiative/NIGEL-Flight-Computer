@@ -79,7 +79,8 @@ void xb_raw_recv(uint8_t *buff, size_t len) {
 }
 
 void xb_set_dst(uint64_t addr) {
-
+    xb_tx_frame_t *frame = (xb_tx_frame_t *) tx_buff;
+    frame->dst_address_64 = addr;
 }
 
 xb_ret_t xb_cmd_dio(xbee_dio_t dio, xbee_dio_output_t output) {
