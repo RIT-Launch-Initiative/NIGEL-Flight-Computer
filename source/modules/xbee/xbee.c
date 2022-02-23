@@ -13,11 +13,9 @@ typedef struct {
     uint16_t length;
     uint8_t frame_type;
     uint64_t dst_address_64;
-    uint16_t dst_address_16;
+    uint16_t reserved;
     uint8_t radius;
     uint8_t options;
-    uint64_t payload; // Variable amount of data
-    uint8_t checksum;
 } xb_tx_frame_t;
 
 typedef struct {
@@ -31,8 +29,10 @@ typedef struct {
     uint8_t checksum;
 } xb_rx_frame_t;
 
-xb_ret_t xb_tx(uint8_t* data, size_t len) {
-    xb_tx_frame_t *frame = (xb_tx_frame_t *) malloc(sizeof(xb_tx_frame_t));
+static uint8_t tx_buff[1024];
+
+xb_ret_t xb_tx(uint8_t *data, size_t len) {
+    xb_tx_frame_t *frame = (xb_tx_frame_t *) tx_buff;
 
     if (frame == NULL) {
         return XB_ERR;
@@ -42,24 +42,26 @@ xb_ret_t xb_tx(uint8_t* data, size_t len) {
     frame->length = 0x05;
     frame->frame_type = 0x10;
     frame->dst_address_64 = 0x000000000000FFFF;
-    frame->dst_address_16 = 0xFFFE;
-    frame->radius = radius; // ?
+    frame->reserved = 0xFFFE;
+    frame->radius = 0;
     frame->options = 0x80;
-    frame->payload = (uint64_t) payload; // ?
-    frame->checksum = 0xFF - (sizeof(frame) - sizeof(frame->length) - sizeof(frame->start_delimiter)); // ?
 
-//    *_xb_write();
+    uint8_t check = 0;
+
+    for (int i = 3; i < frame->length + sizeof(xb_tx_frame_t); i++) {
+        check += data[i];
+    }
 
     return XB_OK;
 }
 
-void xb_attach_rx_callback(void (*rx) (uint8_t* buff, size_t len)) {
+void xb_attach_rx_callback(void (*rx)(uint8_t *buff, size_t len)) {
 
 
 }
 
 
-void xb_raw_recv(uint8_t* buff, size_t len) {
+void xb_raw_recv(uint8_t *buff, size_t len) {
     xb_rx_frame_t *frame = (xb_rx_frame_t *) malloc(sizeof(xb_rx_frame_t));
 
     if (frame == NULL) {
