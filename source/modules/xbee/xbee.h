@@ -17,8 +17,8 @@ typedef enum {
 
 // init function
 // 'write' is a function that the API will use to output data to the XBee
-// NOTE: places the XBee in API mode, 
-//       this function must be called within 1s of power up or the XBee 
+// NOTE: places the XBee in API mode,
+//       this function must be called within 1s of power up or the XBee
 //       cannot be placed in command mode
 xb_ret_t xb_init(int (*write) (uint8_t* buff, size_t len));
 
