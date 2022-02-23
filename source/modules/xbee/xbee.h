@@ -7,8 +7,6 @@
 #ifndef XBEE_H
 #define XBEE_H
 
-#include <stdint.h>
-#include <stlib.h>
 
 #define XBEE_BROADCAST_ADDR 0x000000000000FFFF
 
@@ -26,7 +24,7 @@ xb_ret_t xb_init(int (*write) (uint8_t* buff, size_t len));
 
 // function that should be called when any data is received from the XBee (either over serial or SPI)
 // needs to be called by lower layer
-void xb_raw_recv(uint8_t* buff, size_t len)
+void xb_raw_recv(uint8_t* buff, size_t len);
 
 // attach a callback function to call when an rx frame is received
 // 'buff' points to the payload of length 'len' in the frame
