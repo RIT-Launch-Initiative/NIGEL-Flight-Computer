@@ -17,6 +17,9 @@ int sio_write(int fd, char *buff, int len);
 int sio_read(int fd, char *buff, int len);
 
 // attach a callback function to a specific descriptor
+// this function will be called everytime data is read on that descriptor
+// the data can be accessed with sio_read
+// this function can be used to tell a higher layer that data is ready to be read
 void sio_attach_callback(int fd, void (*cb_func) ());
 
 // search for the file descriptor matching a name
