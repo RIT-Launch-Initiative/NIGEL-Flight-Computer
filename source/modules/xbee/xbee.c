@@ -79,7 +79,10 @@ void xb_set_dst(uint64_t addr) {
     frame->dst_address_64 = addr;
 }
 
-xb_ret_t xb_cmd_dio(xbee_dio_t dio, xbee_dio_output_t output) {
+xb_ret_t xb_cmd_dio(xb_dio_t dio, xb_dio_output_t output) {
+
+
+
 
 
 

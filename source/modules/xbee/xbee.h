@@ -39,14 +39,14 @@ xb_ret_t xb_tx(uint8_t* data, size_t len);
 
 typedef enum {
     XBEE_DIO12
-} xbee_dio_t;
+} xb_dio_t;
 
 typedef enum {
     XBEE_DIO_HIGH,
     XBEE_DIO_LOW
-} xbee_dio_output_t;
+} xb_dio_output_t;
 
 // remotely command digital I/O
-xb_ret_t xb_cmd_dio(xbee_dio_t dio, xbee_dio_output_t output);
+xb_ret_t xb_cmd_dio(xb_dio_t dio, xb_dio_output_t output);
 
 #endif
