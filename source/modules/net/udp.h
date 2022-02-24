@@ -20,7 +20,4 @@ typedef struct {
 //       assumes the 'checksum' field in the header is already zeroed
 uint16_t udp_calculate_checksum(uint8_t* data, size_t len);
 
-// hardware to network order conversion
-uint16_t htons(uint16_t n);
-
 #endif

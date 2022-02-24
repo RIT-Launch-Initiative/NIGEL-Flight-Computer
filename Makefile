@@ -67,6 +67,7 @@ source/modules/sio/sio.c \
 source/modules/scheduler/ts.c \
 source/modules/watchdog/watchdog.c \
 source/modules/net/udp.c \
+source/modules/net/net.c \
 source/modules/hashmap/hashmap.c \
 source/modules/gcmd/gcmd.c
 
