@@ -3,3 +3,6 @@
 *.bin
 *.o
 *.d
+
+CMakeLists.txt
+cmake-build-debug

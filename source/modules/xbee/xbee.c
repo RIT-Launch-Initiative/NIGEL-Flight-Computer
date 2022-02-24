@@ -82,6 +82,7 @@ void xb_set_dst(uint64_t addr) {
 xb_ret_t xb_cmd_dio(xbee_dio_t dio, xbee_dio_output_t output) {
 
 
+
     return XB_OK;
 }
 
