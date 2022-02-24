@@ -43,12 +43,14 @@ typedef struct {
 
 static uint8_t tx_buff[1024];
 static uint8_t rx_buff[1024];
+static uint8_t at_buff[1024];
+
 
 xb_ret_t xb_tx(uint8_t *data, size_t len) {
     xb_tx_frame_t *frame = (xb_tx_frame_t *) tx_buff;
 
-    frame->xb_header->start_delimiter = 0x7E;
-    frame->xb_header->length = len;
+    frame->header.start_delimiter = 0x7E;
+    frame->header.length = len;
     frame->frame_type = 0x10;
     frame->dst_address_64 = 0x000000000000FFFF;
     frame->reserved = 0xFFFE;
@@ -59,12 +61,12 @@ xb_ret_t xb_tx(uint8_t *data, size_t len) {
     memcpy(tx_buff + sizeof(xb_tx_frame_t), data, len);
 
     uint8_t check = 0;
-    for (int i = 3; i < frame->length + sizeof(xb_tx_frame_t); i++) {
+    for (int i = 3; i < frame->header.length  + sizeof(xb_tx_frame_t); i++) {
         check += tx_buff[i];
     }
 
     check = 0xff - check;
-    memcpy(tx_buff + frame->length + sizeof(xb_tx_frame_t), &check, 1);
+    memcpy(tx_buff + frame->header.length  + sizeof(xb_tx_frame_t), &check, 1);
 
     return XB_OK;
 }
@@ -76,14 +78,6 @@ void xb_attach_rx_callback(void (*rx)(uint8_t *buff, size_t len)) {
 
 
 void xb_raw_recv(uint8_t *buff, size_t len) {
-    xb_rx_frame_t *frame = (xb_rx_frame_t *) rx_buff;
-
-    frame->start_delimiter = 0x7E;
-    frame->length = len;
-    frame->frame_type = 0x90;
-    frame->src_address_64 = 0x000000000000FFFF;
-    frame->reserved = 0xFFFE;
-
 
 }
 
@@ -93,25 +87,25 @@ void xb_set_dst(uint64_t addr) {
 }
 
 xb_ret_t xb_cmd_dio(xb_dio_t dio, xb_dio_output_t output) {
-    xb_tx_frame_t *frame = (xb_tx_frame_t *) tx_buff;
+    xb_at_frame_t *frame = (xb_at_frame_t *) at_buff;
 
-    frame->xb_header->start_delimiter = 0x7E;
-    frame->xb_header->length = len;
+    frame->header.start_delimiter = 0x7E;
+    frame->header.length = sizeof(xb_at_frame_t) - 2;
     frame->frame_type = 0x17;
     frame->frame_id = 0;
     frame->dst_address_64 = dio;
     frame->reserved = 0xFFE;
     frame->options = 0;
     frame->at_command = output;
-    frame->param_value = 0
+    frame->param_value = 0;
 
-
-    for (int i = 3; i < frame->length + sizeof(xb_tx_frame_t); i++) {
-        check += tx_buff[i];
+    uint8_t check = 0;
+    for (int i = 3; i < frame->header.length + sizeof(xb_at_frame_t); i++) {
+        check += at_buff[i];
     }
 
     check = 0xff - check;
-    memcpy(tx_buff + frame->length + sizeof(xb_tx_frame_t), &check, 1);
+    memcpy(tx_buff + frame->header.length + sizeof(xb_at_frame_t), &check, 1);
 
     return XB_OK;
 }
