@@ -43,11 +43,12 @@ typedef struct {
 } xb_at_frame_t;
 
 int (*xb_write)(uint8_t *buf, size_t len);
+
 static uint8_t tx_buff[1024];
 static uint8_t rx_buff[1024];
-static void (*rx)(uint8_t *buff, size_t len) rx_callback;
+static void (*rx)(uint8_t *buff, size_t len)rx_callback;
 
-xb_ret_t xb_tx(uint8_t *data, size_t len) {
+        xb_ret_t xb_tx(uint8_t *data, size_t len) {
     xb_tx_frame_t *frame = (xb_tx_frame_t *) tx_buff;
 
     frame->header.start_delimiter = 0x7E;
@@ -68,10 +69,10 @@ xb_ret_t xb_tx(uint8_t *data, size_t len) {
     }
 
     check = 0xff - check;
-    memcpy(tx_buff + len  + sizeof(xb_tx_frame_t), &check, 1);
+    memcpy(tx_buff + len + sizeof(xb_tx_frame_t), &check, 1);
 
     size_t write_len = len + sizeof(xb_tx_frame_t) + 1;
-    if(xb_write(tx_buff, write_len) < write_len) {
+    if (xb_write(tx_buff, write_len) < write_len) {
         // write error
         return XB_ERR;
     }
@@ -92,7 +93,7 @@ void xb_set_dst(uint64_t addr) {
     dst_addr = addr;
 }
 
-static xb_ret_t xb_at_cmd(const char[2] cmd, const char* param) {
+static xb_ret_t xb_at_cmd(const char[2] cmd, const char *param) {
     xb_at_frame_t *frame = (xb_at_frame_t *) tx_buff;
 
     size_t param_size = strlen(param);
@@ -113,14 +114,14 @@ static xb_ret_t xb_at_cmd(const char[2] cmd, const char* param) {
 
     uint8_t check = 0;
     size_t i;
-    for(i = sizeof(xb_header_t); i < sizeof(xb_at_frame_t) + param_size; i++) {
+    for (i = sizeof(xb_header_t); i < sizeof(xb_at_frame_t) + param_size; i++) {
         check += at_buff[i];
     }
 
     tx_buff[i] = 0xFF - check;
 
     size_t len = sizeof(xb_at_frame_t) + param_size + 1;
-    if(xb_write(tx_buff, len) < len) {
+    if (xb_write(tx_buff, len) < len) {
         // write error
         return XB_ERR;
     }
@@ -131,7 +132,7 @@ static xb_ret_t xb_at_cmd(const char[2] cmd, const char* param) {
 xb_ret_t xb_cmd_dio(xb_dio_t dio, xb_dio_output_t output) {
     char cmd[2];
 
-    switch(dio) {
+    switch (dio) {
         case XB_DIO12:
             // P2
             cmd[0] = 'P';
@@ -142,8 +143,8 @@ xb_ret_t xb_cmd_dio(xb_dio_t dio, xb_dio_output_t output) {
     }
 
     // TODO I'm not sure if the parameter is passed as ASCII or binary
-    char* param = "4";
-    if(output == XB_DIO_HIGH) {
+    char *param = "4";
+    if (output == XB_DIO_HIGH) {
         param = "5";
     } // else low (4)
 
@@ -154,7 +155,7 @@ xb_ret_t xb_init(int (*write)(uint8_t *buf, size_t len)) {
     xb_write = write;
 
     // enter command mode
-    if(xb_write("+++", 3) < 3) {
+    if (xb_write("+++", 3) < 3) {
         // write failure
         return XB_ERR;
     }
@@ -164,9 +165,9 @@ xb_ret_t xb_init(int (*write)(uint8_t *buf, size_t len)) {
     spinlock(1500);
 
     // send command to put into API mode
-    const char* at_cmd = "ATAP1\r"; // API mode without escapes
+    const char *at_cmd = "ATAP1\r"; // API mode without escapes
 
-    if(xb_write(at_cmd, 6) < 6) {
+    if (xb_write(at_cmd, 6) < 6) {
         // write failure
         return XB_ERR;
     }
