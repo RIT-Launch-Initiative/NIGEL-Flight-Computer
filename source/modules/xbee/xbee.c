@@ -152,7 +152,6 @@ xb_ret_t xb_init(int (*write)(uint8_t *buf, size_t len)) {
     // wait for 1.5s to be safe
     spinlock(1500);
 
-    // TODO
     // send command to put into API mode
     const char* at_cmd = "ATAP1\r"; // API mode without escapes
 
