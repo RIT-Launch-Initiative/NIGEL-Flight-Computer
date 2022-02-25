@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <string.h>
 #include "net.h"
+#include "spinlock.h"
 #include "xbee.h"
 
 typedef struct {
@@ -137,12 +138,29 @@ xb_ret_t xb_cmd_dio(xb_dio_t dio, xb_dio_output_t output) {
     return XB_OK;
 }
 
-
 xb_ret_t xb_init(int (*write)(uint8_t *buf, size_t len)) {
     xb_write = write;
 
-    // TODO put XBee in API mode
-    // transparent mode (boot) -> command mode -> API mode
+    // enter command mode
+    if(xb_write("+++", 3) < 3) {
+        // write failure
+        return XB_ERR;
+    }
+
+    // the line should be silent for 1s
+    // wait for 1.5s to be safe
+    spinlock(1500);
+
+    // TODO
+    // send command to put into API mode
+    const char* at_cmd = "ATAP1\r"; // API mode without escapes
+
+    if(xb_write(at_cmd, 6) < 6) {
+        // write failure
+        return XB_ERR;
+    }
+
+    // at this point we're in API mode
 
     return XB_OK;
 }

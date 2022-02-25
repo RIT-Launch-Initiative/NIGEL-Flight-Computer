@@ -69,7 +69,8 @@ source/modules/watchdog/watchdog.c \
 source/modules/net/udp.c \
 source/modules/net/net.c \
 source/modules/hashmap/hashmap.c \
-source/modules/gcmd/gcmd.c
+source/modules/gcmd/gcmd.c \
+source/modules/spinlock/spinlock.c
 
 # CPP sources
 CPP_SOURCES = \
@@ -147,7 +148,8 @@ C_INCLUDES =  \
 -Isource/modules/watchdog \
 -Isource/init \
 -Isource/modules/hashmap \
--Isource/modules/gcmd
+-Isource/modules/gcmd \
+-Isource/modules/spinlock
 
 
 # compile gcc flags

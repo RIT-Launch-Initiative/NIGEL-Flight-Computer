@@ -10,8 +10,8 @@
 static UART_HandleTypeDef* uarts[NUM_UARTS] =
 {
     &huart3,
-    &huart1,
-    &huart2
+    &huart2,
+    &huart1
 };
 
 // allows file descriptors to be mapped to names
