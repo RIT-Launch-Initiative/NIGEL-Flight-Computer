@@ -46,6 +46,7 @@ typedef struct {
 int (*xb_write)(uint8_t *buf, size_t len);
 static uint8_t tx_buff[1024];
 static uint8_t rx_buff[1024];
+static void (*rx)(uint8_t *buff, size_t len) rx_callback;
 
 xb_ret_t xb_tx(uint8_t *data, size_t len) {
     xb_tx_frame_t *frame = (xb_tx_frame_t *) tx_buff;
@@ -80,7 +81,7 @@ xb_ret_t xb_tx(uint8_t *data, size_t len) {
 }
 
 void xb_attach_rx_callback(void (*rx)(uint8_t *buff, size_t len)) {
-    // TODO
+    rx_callback = rx;
 }
 
 
