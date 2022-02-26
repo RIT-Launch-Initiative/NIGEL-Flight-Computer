@@ -70,7 +70,8 @@ source/modules/net/udp.c \
 source/modules/net/net.c \
 source/modules/hashmap/hashmap.c \
 source/modules/gcmd/gcmd.c \
-source/modules/spinlock/spinlock.c
+source/modules/spinlock/spinlock.c \
+source/modules/xbee/xbee.c
 
 # CPP sources
 CPP_SOURCES = \
@@ -149,7 +150,9 @@ C_INCLUDES =  \
 -Isource/init \
 -Isource/modules/hashmap \
 -Isource/modules/gcmd \
--Isource/modules/spinlock
+-Isource/modules/spinlock \
+-Isource/modules/xbee \
+-Isource/modules/net
 
 
 # compile gcc flags

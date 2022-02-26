@@ -13,6 +13,7 @@
 
 #define START_DELIMETER   0x7E
 #define TX_FRAME_TYPE     0x10
+#define RX_FRAME_TYPE     0x90
 #define AT_CMD_FRAME_TYPE 0x17
 
 typedef struct {
@@ -48,9 +49,10 @@ typedef struct {
 
 int (*xb_write)(uint8_t *buf, size_t len);
 
+// default to broadcast
+static uint64_t dst_addr = XBEE_BROADCAST_ADDR;
+static void (*rx_callback)(uint8_t *buff, size_t len);
 static uint8_t tx_buff[1024];
-static uint8_t rx_buff[1024];
-static void (*rx)(uint8_t *buff, size_t len)rx_callback;
 
 xb_ret_t xb_tx(uint8_t *data, size_t len) {
     xb_tx_frame_t *frame = (xb_tx_frame_t *) tx_buff;
@@ -89,48 +91,95 @@ void xb_attach_rx_callback(void (*rx)(uint8_t *buff, size_t len)) {
 }
 
 
+#define RX_BUFF_SIZE 2048 // bytes
+static uint8_t rx_buff[RX_BUFF_SIZE];
+
 void xb_raw_recv(uint8_t *buff, size_t len) {
     typedef enum {
-        START,
-        MIDDLE,
-        WAIT
-    } xb_frame_state_t;
+        WAITING_FOR_FRAME,
+        WAITING_FOR_HEADER,
+        READING_PAYLOAD
+    } state_t;
 
-    xb_frame_state_t state = buff[0] == 0x7E ? START : WAIT;
-    int offset = 0;
+    static size_t rx_index = 0;
+    static size_t to_read; // bytes left of payload to read
+    static size_t payload_size;
 
-    for (size_t i = 0; i < len; i++) {
-        switch (state) {
-            case START:
-                if (buff[i] != 0x7E) {
-                    state = MIDDLE;
-                    offset = 1;
+    static state_t state = WAITING_FOR_FRAME;
+    static uint8_t check = RX_FRAME_TYPE;
+
+    size_t i = 0;
+
+    start_switch:
+    switch(state) {
+        case WAITING_FOR_FRAME:
+            for(; i < len; i++) {
+                if(buff[i] == START_DELIMETER) {
+                    state = WAITING_FOR_HEADER;
+                    rx_index = 0;
                 }
+            }
+
+            if(state == WAITING_FOR_FRAME) {
                 break;
-            case MIDDLE:
-                if (offset >= 18) {
-                    rx_buff[offset] = buff[i];
+            } // otherwise start parsing header
+
+        case WAITING_FOR_HEADER:
+            // "header" is length and frame type
+            for(; i < len; i++) {
+                rx_buff[rx_index] = buff[i];
+                rx_index++;
+                if(rx_index > 3) {
+                    if(rx_buff[2] != RX_FRAME_TYPE) {
+                        state = WAITING_FOR_HEADER;
+                        goto start_switch; // gross
+                    }
+
+                    payload_size = ntoh16(*((uint16_t*)rx_buff));
+                    to_read = payload_size + 1; // read checksum too
+                    state = READING_PAYLOAD;
+                }
+            }
+
+            if(state == WAITING_FOR_HEADER) {
+                break;
+            }
+
+        case READING_PAYLOAD:
+            for(; i < len; i++) {
+                rx_buff[rx_index++] = buff[i];
+                to_read--;
+
+                if(rx_index > RX_BUFF_SIZE) {
+                    // overflow, throw away packet
+                    state = WAITING_FOR_FRAME;
+                    goto start_switch;
                 }
 
-                offset++;
 
-                break;
-            case WAIT:
-                if (buff[i] == 0x7E) {
-                    state = START;
+                if(to_read == 0) {
+                    if(rx_callback) {
+                        uint8_t checksum = 0xFF - check;
+                        if (checksum == rx_buff[rx_index - 1]) {
+                            rx_callback(rx_buff + 14, payload_size);
+                        } // else bad check, throwaway
+                    }
+
+                    check = RX_FRAME_TYPE;
+                    state = WAITING_FOR_FRAME;
+                    goto start_switch;
+                } else {
+                    check += buff[i];
                 }
-                break;
-        }
+            }
     }
-
-    // TODO: Validate checksum
 }
 
 void xb_set_dst(uint64_t addr) {
     dst_addr = addr;
 }
 
-static xb_ret_t xb_at_cmd(const char[2] cmd, const char *param) {
+static xb_ret_t xb_at_cmd(const char cmd[2], const char *param) {
     xb_at_frame_t *frame = (xb_at_frame_t *) tx_buff;
 
     size_t param_size = strlen(param);
@@ -152,7 +201,7 @@ static xb_ret_t xb_at_cmd(const char[2] cmd, const char *param) {
     uint8_t check = 0;
     size_t i;
     for (i = sizeof(xb_header_t); i < sizeof(xb_at_frame_t) + param_size; i++) {
-        check += at_buff[i];
+        check += tx_buff[i];
     }
 
     tx_buff[i] = 0xFF - check;
@@ -191,7 +240,7 @@ xb_ret_t xb_init(int (*write)(uint8_t *buf, size_t len)) {
     xb_write = write;
 
     // enter command mode
-    if (xb_write("+++", 3) < 3) {
+    if (xb_write((uint8_t*)"+++", 3) < 3) {
         // write failure
         return XB_ERR;
     }
@@ -203,7 +252,7 @@ xb_ret_t xb_init(int (*write)(uint8_t *buf, size_t len)) {
     // send command to put into API mode
     const char *at_cmd = "ATAP1\r"; // API mode without escapes
 
-    if (xb_write(at_cmd, 6) < 6) {
+    if (xb_write((uint8_t*)at_cmd, 6) < 6) {
         // write failure
         return XB_ERR;
     }
