@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "xbee.c"
+#include "xbee.h"
 
 #define TEST_START_DELIMETER      0x7E
 #define TEST_RX_FRAME_TYPE        0x90
@@ -32,7 +32,6 @@ int main() {
                                 0x69, 0x69, 0x69, 0x69, // Payload data
                                 0xEF // Checksum EOF. 0xff - 16 bytes from
     };
-
 
     xb_raw_recv(TEST_RX_PACKET, sizeof(TEST_RX_PACKET));
 

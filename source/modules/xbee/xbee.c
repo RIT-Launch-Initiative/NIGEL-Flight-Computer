@@ -7,9 +7,10 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
-#include "net.h"
-#include "spinlock.h"
+#include "../net/net.c"
+#include "../spinlock/spinlock.c"
 #include "xbee.h"
+#include "stdio.h"
 
 #define START_DELIMETER   0x7E
 #define TX_FRAME_TYPE     0x10
