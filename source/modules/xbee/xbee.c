@@ -11,6 +11,10 @@
 #include "spinlock.h"
 #include "xbee.h"
 
+#define START_DELIMETER   0x7E
+#define TX_FRAME_TYPE     0x10
+#define AT_CMD_FRAME_TYPE 0x17
+
 typedef struct {
     uint8_t start_delimiter;
     uint16_t length;
@@ -51,10 +55,10 @@ static void (*rx)(uint8_t *buff, size_t len)rx_callback;
 xb_ret_t xb_tx(uint8_t *data, size_t len) {
     xb_tx_frame_t *frame = (xb_tx_frame_t *) tx_buff;
 
-    frame->header.start_delimiter = 0x7E;
+    frame->header.start_delimiter = START_DELIMETER;
     // length = payload + frame - header
     frame->header.length = hton16(len + sizeof(xb_tx_frame_t) - sizeof(xb_header_t));
-    frame->frame_type = 0x10;
+    frame->frame_type = TX_FRAME_TYPE;
     frame->dst_address_64 = dst_addr;
     frame->reserved = hton16(0xFFFE);
     frame->radius = 0;
@@ -68,7 +72,7 @@ xb_ret_t xb_tx(uint8_t *data, size_t len) {
         check += tx_buff[i];
     }
 
-    check = 0xff - check;
+    check = 0xFF - check;
     memcpy(tx_buff + len + sizeof(xb_tx_frame_t), &check, 1);
 
     size_t write_len = len + sizeof(xb_tx_frame_t) + 1;
@@ -131,10 +135,10 @@ static xb_ret_t xb_at_cmd(const char[2] cmd, const char *param) {
 
     size_t param_size = strlen(param);
 
-    frame->header.start_delimiter = 0x7E;
+    frame->header.start_delimiter = START_DELIMETER;
     // length = frame - header + param
     frame->header.length = hton16(sizeof(xb_at_frame_t) - sizeof(xb_header_t) + param_size);
-    frame->frame_type = 0x17;
+    frame->frame_type = AT_CMD_FRAME_TYPE;
     frame->frame_id = 0;
     frame->dst_address_64 = dst_addr;
     frame->reserved = hton16(0xFFFE);
@@ -153,8 +157,7 @@ static xb_ret_t xb_at_cmd(const char[2] cmd, const char *param) {
 
     tx_buff[i] = 0xFF - check;
 
-    size_t len = sizeof(xb_at_frame_t) + param_size + 1;
-    if (xb_write(tx_buff, len) < len) {
+    if (xb_write(tx_buff, i + 1) < i + 1) {
         // write error
         return XB_ERR;
     }
