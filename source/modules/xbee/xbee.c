@@ -48,7 +48,7 @@ static uint8_t tx_buff[1024];
 static uint8_t rx_buff[1024];
 static void (*rx)(uint8_t *buff, size_t len)rx_callback;
 
-        xb_ret_t xb_tx(uint8_t *data, size_t len) {
+xb_ret_t xb_tx(uint8_t *data, size_t len) {
     xb_tx_frame_t *frame = (xb_tx_frame_t *) tx_buff;
 
     frame->header.start_delimiter = 0x7E;
@@ -86,7 +86,40 @@ void xb_attach_rx_callback(void (*rx)(uint8_t *buff, size_t len)) {
 
 
 void xb_raw_recv(uint8_t *buff, size_t len) {
-    // TODO
+    typedef enum {
+        START,
+        MIDDLE,
+        WAIT
+    } xb_frame_state_t;
+
+    xb_frame_state_t state = buff[0] == 0x7E ? START : WAIT;
+    int offset = 0;
+
+    for (size_t i = 0; i < len; i++) {
+        switch (state) {
+            case START:
+                if (buff[i] != 0x7E) {
+                    state = MIDDLE;
+                    offset = 1;
+                }
+                break;
+            case MIDDLE:
+                if (offset >= 18) {
+                    rx_buff[offset] = buff[i];
+                }
+
+                offset++;
+
+                break;
+            case WAIT:
+                if (buff[i] == 0x7E) {
+                    state = START;
+                }
+                break;
+        }
+    }
+
+    // TODO: Validate checksum
 }
 
 void xb_set_dst(uint64_t addr) {
