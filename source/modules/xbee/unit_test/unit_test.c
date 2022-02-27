@@ -46,7 +46,27 @@ int main() {
     check = 0xFF - check;
     TEST_RX_PACKET[sizeof(TEST_RX_PACKET) - 1] = check;
 
-    // TODO chunk it
+    // test with one chunk
+    printf("should print once\n");
+    xb_raw_recv(TEST_RX_PACKET, sizeof(TEST_RX_PACKET));
+    printf("\n");
+
+    // test with two chunks
+    printf("should print once\n");
+    xb_raw_recv(TEST_RX_PACKET, sizeof(TEST_RX_PACKET) - 15);
+    xb_raw_recv(TEST_RX_PACKET + sizeof(TEST_RX_PACKET) - 15, 15);
+    printf("\n");
+
+    // test with single bytes received at a time
+    printf("should print once\n");
+    for(size_t i = 0; i < sizeof(TEST_RX_PACKET); i++) {
+        xb_raw_recv(TEST_RX_PACKET + i, 1);
+    }
+    printf("\n");
+
+    // change the frame id to not an rx frame
+    TEST_RX_PACKET[10] = 0x91;
+    // shouldn't print
     xb_raw_recv(TEST_RX_PACKET, sizeof(TEST_RX_PACKET));
 
     return 0;
