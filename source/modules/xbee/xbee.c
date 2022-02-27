@@ -104,6 +104,9 @@ void xb_raw_recv(uint8_t *buff, size_t len) {
         READING_PAYLOAD
     } state_t;
 
+    printf("%s\n", buff);
+    printf("%zX\n", len);
+
     static size_t rx_index = 0;
     static size_t to_read; // bytes left of payload to read
     static size_t payload_size;
@@ -117,9 +120,13 @@ void xb_raw_recv(uint8_t *buff, size_t len) {
     switch (state) {
         case WAITING_FOR_FRAME:
             for (; i < len; i++) {
-                if (buff[i] == START_DELIMETER) {
+                printf("%X: Waiting for frame\n", buff[i]);
+
+                // TODO: Figure out if ~ needs to be compared instead. 0x7E converts to ASCII 126 (~)
+                if (buff[i] ==  '~') { //START_DELIMETER) {
                     state = WAITING_FOR_HEADER;
                     rx_index = 0;
+                    break;
                 }
             }
 
@@ -129,18 +136,23 @@ void xb_raw_recv(uint8_t *buff, size_t len) {
 
         case WAITING_FOR_HEADER:
             // "header" is length and frame type
+
+            rx_buff[rx_index] = buff[++i];
+            if (rx_buff[0] != RX_FRAME_TYPE) {
+                state = WAITING_FOR_HEADER;
+                goto start_switch; // gross
+            }
             for (; i < len; i++) {
+                printf("%X: Waiting for header\n", buff[i]);
+
                 rx_buff[rx_index] = buff[i];
                 rx_index++;
-                if (rx_index > 3) {
-                    if (rx_buff[2] != RX_FRAME_TYPE) {
-                        state = WAITING_FOR_HEADER;
-                        goto start_switch; // gross
-                    }
 
+                if (rx_index > 11) { // 11 represents frame type offset to received data offset
                     payload_size = ntoh16(*((uint16_t *) rx_buff));
                     to_read = payload_size + 1; // read checksum too
                     state = READING_PAYLOAD;
+                    break;
                 }
             }
 
@@ -150,6 +162,8 @@ void xb_raw_recv(uint8_t *buff, size_t len) {
 
         case READING_PAYLOAD:
             for (; i < len; i++) {
+                printf("%X: Reading payload\n", buff[i]);
+
                 rx_buff[rx_index++] = buff[i];
                 to_read--;
 
@@ -164,6 +178,7 @@ void xb_raw_recv(uint8_t *buff, size_t len) {
                     if (rx_callback) {
                         uint8_t checksum = 0xFF - check;
                         if (checksum == rx_buff[rx_index - 1]) {
+                            printf("Callback\n");
                             rx_callback(rx_buff + 14, payload_size);
                         } // else bad check, throwaway
                     }

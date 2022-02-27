@@ -33,7 +33,7 @@ int main() {
                                 0xEF // Checksum EOF. 0xff - 16 bytes from
     };
 
-    xb_raw_recv(TEST_RX_PACKET, sizeof(TEST_RX_PACKET));
+    xb_raw_recv(TEST_RX_PACKET, 25);
 
 
     return 0;
