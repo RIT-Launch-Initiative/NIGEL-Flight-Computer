@@ -7,10 +7,9 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
-#include "../net/net.c"
-#include "../spinlock/spinlock.c"
+#include "net.h"
+#include "spinlock.h"
 #include "xbee.h"
-#include "stdio.h"
 
 #define START_DELIMETER   0x7E
 #define TX_FRAME_TYPE     0x10
@@ -52,9 +51,7 @@ int (*xb_write)(uint8_t *buf, size_t len);
 
 // default to broadcast
 static uint64_t dst_addr = XBEE_BROADCAST_ADDR;
-
 static void (*rx_callback)(uint8_t *buff, size_t len);
-
 static uint8_t tx_buff[1024];
 
 xb_ret_t xb_tx(uint8_t *data, size_t len) {
@@ -100,97 +97,111 @@ static uint8_t rx_buff[RX_BUFF_SIZE];
 void xb_raw_recv(uint8_t *buff, size_t len) {
     typedef enum {
         WAITING_FOR_FRAME,
-        WAITING_FOR_HEADER,
-        READING_PAYLOAD
+        WAITING_FOR_LENGTH,
+        READING_PAYLOAD,
+        WAIT_FOR_FRAME_END
     } state_t;
-
-    printf("%s\n", buff);
-    printf("%zX\n", len);
 
     static size_t rx_index = 0;
     static size_t to_read; // bytes left of payload to read
     static size_t payload_size;
 
     static state_t state = WAITING_FOR_FRAME;
-    static uint8_t check = RX_FRAME_TYPE;
+    static uint8_t check = 0;
 
     size_t i = 0;
 
     start_switch:
-    switch (state) {
+    switch(state) {
         case WAITING_FOR_FRAME:
-            for (; i < len; i++) {
-                printf("%X: Waiting for frame\n", buff[i]);
-
-                // TODO: Figure out if ~ needs to be compared instead. 0x7E converts to ASCII 126 (~)
-                if (buff[i] ==  '~') { //START_DELIMETER) {
-                    state = WAITING_FOR_HEADER;
+            for(; i < len; i++) {
+                if(buff[i] == START_DELIMETER) {
+                    state = WAITING_FOR_LENGTH;
                     rx_index = 0;
-                    break;
+                    i++;
+                    break; // don't need to keep checking for delimeters
                 }
             }
 
-            if (state == WAITING_FOR_FRAME) {
+            if(state == WAITING_FOR_FRAME) {
                 break;
-            } // otherwise, start parsing header
+            } // otherwise start parsing header
 
-        case WAITING_FOR_HEADER:
-            // "header" is length and frame type
-            rx_buff[rx_index] = buff[++i];
-            if (rx_buff[0] != RX_FRAME_TYPE) {
-                state = WAITING_FOR_HEADER;
-                goto start_switch; // gross
-            }
-
-            // TODO: Test length currently 8-bits instead of 16-bits
-            payload_size = rx_buff[1] - 13; // Subtract non payload field sizes (13)
-
-            for (; i < len; i++) {
-                printf("%X: Waiting for header\n", buff[i]);
-
+        case WAITING_FOR_LENGTH:
+            for(; i < len; i++) {
                 rx_buff[rx_index] = buff[i];
                 rx_index++;
+                if(rx_index == 2) {
+                    i++;
+                    payload_size = ntoh16(*((uint16_t*)rx_buff));
+                    to_read = payload_size + 1; // read checksum too
 
-                if (rx_index > 11) { // 11 represents frame type offset to received data offset
-//                    payload_size = ntoh16(*((uint16_t *) rx_buff));
-//                    to_read = payload_size + 1; // read checksum too
+                    // TODO maybe just get rid of this and read all kinds of frames
+                    // then decide which callback to call based on frame id
+                    // if(rx_buff[2] != RX_FRAME_TYPE) {
+                    //     // wait for this frame to finish
+                    //     state = WAIT_FOR_FRAME_END;
+                    //     goto start_switch; // gross
+                    // }
+
+                    // start writing over the buffer again, already stored length
+                    rx_index = 0;
+
                     state = READING_PAYLOAD;
-                    break;
+                    break; // don't need to keep reading header
                 }
             }
 
-            if (state == WAITING_FOR_HEADER) {
+            if(state == WAITING_FOR_LENGTH) {
                 break;
             }
 
         case READING_PAYLOAD:
-            for (++i; i < len; i++) {
-                printf("%X: Reading payload\n", buff[i]);
-
+            for(; i < len; i++) {
                 rx_buff[rx_index++] = buff[i];
                 to_read--;
 
-                if (rx_index > RX_BUFF_SIZE) {
-                    // overflow, throw away packet
-                    state = WAITING_FOR_FRAME;
-                    goto start_switch;
-                }
+                if(to_read == 0) {
+                    uint8_t checksum = 0xFF - check;
+                    if (checksum == rx_buff[rx_index - 1]) {
+                        // pick a callback based on the frame type
+                        switch(rx_buff[0]) {
+                            case RX_FRAME_TYPE:
+                                if(rx_callback) {
+                                    rx_callback(rx_buff + 12, payload_size - 12);
+                                }
+                                break;
+                            default:
+                                // no callback
+                                break;
+                        }
+                    } // else bad check, throwaway
 
-
-                if (to_read == 0) {
-                    if (rx_callback) {
-                        uint8_t checksum = 0xFF - check;
-                        if (checksum == rx_buff[rx_index - 1]) {
-                            printf("Callback\n");
-                            rx_callback(rx_buff + 14, payload_size);
-                        } // else bad check, throwaway
-                    }
-
-                    check = RX_FRAME_TYPE;
+                    // read a full frame, reset from the top
+                    check = 0;
                     state = WAITING_FOR_FRAME;
                     goto start_switch;
                 } else {
                     check += buff[i];
+                }
+
+
+                if(rx_index == RX_BUFF_SIZE) {
+                    // can't read anymore, throw away packet
+                    state = WAIT_FOR_FRAME_END;
+                    goto start_switch;
+                }
+            }
+            break; // should immediately fail next loop anyways
+        case WAIT_FOR_FRAME_END:
+            for(; i < len; i++) {
+                // do nothing
+                to_read--;
+
+                if(to_read == 0) {
+                    // restart now
+                    state = WAITING_FOR_FRAME;
+                    goto start_switch;
                 }
             }
     }
@@ -261,7 +272,7 @@ xb_ret_t xb_init(int (*write)(uint8_t *buf, size_t len)) {
     xb_write = write;
 
     // enter command mode
-    if (xb_write((uint8_t *) "+++", 3) < 3) {
+    if (xb_write((uint8_t*)"+++", 3) < 3) {
         // write failure
         return XB_ERR;
     }
@@ -273,7 +284,7 @@ xb_ret_t xb_init(int (*write)(uint8_t *buf, size_t len)) {
     // send command to put into API mode
     const char *at_cmd = "ATAP1\r"; // API mode without escapes
 
-    if (xb_write((uint8_t *) at_cmd, 6) < 6) {
+    if (xb_write((uint8_t*)at_cmd, 6) < 6) {
         // write failure
         return XB_ERR;
     }

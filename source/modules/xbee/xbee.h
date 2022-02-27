@@ -20,22 +20,22 @@ typedef enum {
 // NOTE: places the XBee in API mode,
 //       this function must be called within 1s of power up or the XBee
 //       cannot be placed in command mode
-xb_ret_t xb_init(int (*write)(uint8_t *buff, size_t len));
+xb_ret_t xb_init(int (*write) (uint8_t* buff, size_t len));
 
 // function that should be called when any data is received from the XBee (either over serial or SPI)
 // needs to be called by lower layer
-void xb_raw_recv(uint8_t *buff, size_t len);
+void xb_raw_recv(uint8_t* buff, size_t len);
 
-// attach a callback function to call when a rx frame is received
+// attach a callback function to call when an rx frame is received
 // 'buff' points to the payload of length 'len' in the frame
-void xb_attach_rx_callback(void (*rx)(uint8_t *buff, size_t len));
+void xb_attach_rx_callback(void (*rx) (uint8_t* buff, size_t len));
 
 // set the destination address of transmitted packets
 // NOTE: default address is broadcast
 void xb_set_dst(uint64_t addr);
 
 // transmit data
-xb_ret_t xb_tx(uint8_t *data, size_t len);
+xb_ret_t xb_tx(uint8_t* data, size_t len);
 
 typedef enum {
     XB_DIO12
