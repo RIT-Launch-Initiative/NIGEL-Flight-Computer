@@ -4,6 +4,7 @@
 #include "xbee.h"
 
 #define TEST_START_DELIMETER      0x7E
+#define TEST_RX_LENGTH            0x11
 #define TEST_RX_FRAME_TYPE        0x90
 #define TEST_BROADCAST_ADDR       0xFF
 #define TEST_RESERVED_B1          0xFF
@@ -23,7 +24,7 @@ int main() {
     xb_attach_rx_callback(&rx_print_data);
 
     uint8_t TEST_RX_PACKET[] = {0x67, 0x61, 0x72, 0x62, 0x61, 0x67, 0x65, // Garbage data
-                                TEST_START_DELIMETER, TEST_RX_FRAME_TYPE, TEST_BROADCAST_ADDR,
+                                TEST_START_DELIMETER, TEST_RX_LENGTH, TEST_RX_FRAME_TYPE, TEST_BROADCAST_ADDR,
                                 TEST_BROADCAST_ADDR,
                                 TEST_BROADCAST_ADDR, TEST_BROADCAST_ADDR,
                                 TEST_BROADCAST_ADDR, TEST_BROADCAST_ADDR, TEST_BROADCAST_ADDR,
@@ -33,7 +34,7 @@ int main() {
                                 0xEF // Checksum EOF. 0xff - 16 bytes from
     };
 
-    xb_raw_recv(TEST_RX_PACKET, 25);
+    xb_raw_recv(TEST_RX_PACKET, sizeof(TEST_RX_PACKET));
 
 
     return 0;

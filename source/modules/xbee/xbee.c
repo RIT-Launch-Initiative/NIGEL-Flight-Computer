@@ -136,12 +136,15 @@ void xb_raw_recv(uint8_t *buff, size_t len) {
 
         case WAITING_FOR_HEADER:
             // "header" is length and frame type
-
             rx_buff[rx_index] = buff[++i];
             if (rx_buff[0] != RX_FRAME_TYPE) {
                 state = WAITING_FOR_HEADER;
                 goto start_switch; // gross
             }
+
+            // TODO: Test length currently 8-bits instead of 16-bits
+            payload_size = rx_buff[1] - 13; // Subtract non payload field sizes (13)
+
             for (; i < len; i++) {
                 printf("%X: Waiting for header\n", buff[i]);
 
@@ -149,8 +152,8 @@ void xb_raw_recv(uint8_t *buff, size_t len) {
                 rx_index++;
 
                 if (rx_index > 11) { // 11 represents frame type offset to received data offset
-                    payload_size = ntoh16(*((uint16_t *) rx_buff));
-                    to_read = payload_size + 1; // read checksum too
+//                    payload_size = ntoh16(*((uint16_t *) rx_buff));
+//                    to_read = payload_size + 1; // read checksum too
                     state = READING_PAYLOAD;
                     break;
                 }
@@ -161,7 +164,7 @@ void xb_raw_recv(uint8_t *buff, size_t len) {
             }
 
         case READING_PAYLOAD:
-            for (; i < len; i++) {
+            for (++i; i < len; i++) {
                 printf("%X: Reading payload\n", buff[i]);
 
                 rx_buff[rx_index++] = buff[i];

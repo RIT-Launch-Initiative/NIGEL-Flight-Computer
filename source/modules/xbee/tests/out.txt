@@ -1,0 +1,27 @@
+garbage~ÿÿÿÿÿÿÿÿ€ÿşiiiiï/<V
+19
+67: Waiting for frame
+61: Waiting for frame
+72: Waiting for frame
+62: Waiting for frame
+61: Waiting for frame
+67: Waiting for frame
+65: Waiting for frame
+7E: Waiting for frame
+90: Waiting for header
+FF: Waiting for header
+FF: Waiting for header
+FF: Waiting for header
+FF: Waiting for header
+FF: Waiting for header
+FF: Waiting for header
+FF: Waiting for header
+FF: Waiting for header
+80: Waiting for header
+FF: Waiting for header
+FE: Waiting for header
+69: Reading payload
+69: Reading payload
+69: Reading payload
+69: Reading payload
+EF: Reading payload
