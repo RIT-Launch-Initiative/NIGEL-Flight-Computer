@@ -10,7 +10,7 @@
 uint16_t hton16(uint16_t n) {
     uint8_t ret[sizeof(uint16_t)];
 
-    for(size_t i = 0; i < sizeof(uint16_t); i++) {
+    for(ssize_t i = sizeof(uint16_t) - 1; i >= 0; i--) {
         ret[i] = n;
         n >>= 8;
     }
@@ -21,7 +21,7 @@ uint16_t hton16(uint16_t n) {
 uint32_t hton32(uint32_t n) {
     uint8_t ret[sizeof(uint32_t)];
 
-    for(size_t i = 0; i < sizeof(uint32_t); i++) {
+    for(ssize_t i = sizeof(uint32_t) - 1; i >= 0; i--) {
         ret[i] = n;
         n >>= 8;
     }
@@ -32,7 +32,7 @@ uint32_t hton32(uint32_t n) {
 uint64_t hton64(uint64_t n) {
     uint8_t ret[sizeof(uint64_t)];
 
-    for(size_t i = 0; i < sizeof(uint64_t); i++) {
+    for(ssize_t i = sizeof(uint64_t) - 1; i >= 0; i--) {
         ret[i] = n;
         n >>= 8;
     }
@@ -43,34 +43,13 @@ uint64_t hton64(uint64_t n) {
 // big endian to little endian
 
 uint16_t ntoh16(uint16_t n) {
-    uint8_t ret[sizeof(uint16_t)];
-
-    for(size_t i = 0; i < sizeof(uint16_t); i++) {
-        ret[sizeof(uint16_t) - i - 1] = n;
-        n >>= 8;
-    }
-
-    return *((uint16_t*)ret);
+    return hton16(n);
 }
 
 uint32_t ntoh32(uint32_t n) {
-    uint8_t ret[sizeof(uint32_t)];
-
-    for(size_t i = 0; i < sizeof(uint32_t); i++) {
-        ret[sizeof(uint32_t) - i - 1] = n;
-        n >>= 8;
-    }
-
-    return *((uint32_t*)ret);
+    return hton32(n);
 }
 
 uint64_t ntoh64(uint64_t n) {
-    uint8_t ret[sizeof(uint64_t)];
-
-    for(size_t i = 0; i < sizeof(uint64_t); i++) {
-        ret[sizeof(uint64_t) - i - 1] = n;
-        n >>= 8;
-    }
-
-    return *((uint64_t*)ret);
+    return hton64(n);
 }

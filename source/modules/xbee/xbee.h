@@ -7,7 +7,6 @@
 #ifndef XBEE_H
 #define XBEE_H
 
-
 #define XBEE_BROADCAST_ADDR 0x000000000000FFFF
 
 typedef enum {
@@ -17,10 +16,11 @@ typedef enum {
 
 // init function
 // 'write' is a function that the API will use to output data to the XBee
+// 'delay' is a function that delays for a given amount of milliseconds
 // NOTE: places the XBee in API mode,
 //       this function must be called within 1s of power up or the XBee
-//       cannot be placed in command mode
-xb_ret_t xb_init(int (*write) (uint8_t* buff, size_t len));
+//       cannot be commanded to API mode
+xb_ret_t xb_init(int (*write) (uint8_t* buff, size_t len), void (*delay)(uint32_t ms));
 
 // function that should be called when any data is received from the XBee (either over serial or SPI)
 // needs to be called by lower layer
@@ -30,12 +30,15 @@ void xb_raw_recv(uint8_t* buff, size_t len);
 // 'buff' points to the payload of length 'len' in the frame
 void xb_attach_rx_callback(void (*rx) (uint8_t* buff, size_t len));
 
-// set the destination address of transmitted packets
+// set the default destination address of transmitted packets
 // NOTE: default address is broadcast
-void xb_set_dst(uint64_t addr);
+void xb_set_default_dst(uint64_t addr);
 
-// transmit data
-xb_ret_t xb_tx(uint8_t* data, size_t len);
+// transmit data to 'addr' (in network order)
+xb_ret_t xb_sendto(uint64_t addr, uint8_t* data, size_t len);
+
+// transmit data to default destination
+xb_ret_t xb_send(uint8_t* data, size_t len);
 
 typedef enum {
     XB_DIO12
