@@ -34,6 +34,7 @@ void xb_raw_recv(uint8_t* buff, size_t len);
 void xb_attach_rx_callback(void (*rx) (uint8_t* buff, size_t len));
 
 // set the default destination address of transmitted packets
+// assumes 'addr' is in system endianness
 // NOTE: default address is broadcast
 void xb_set_default_dst(uint64_t addr);
 
