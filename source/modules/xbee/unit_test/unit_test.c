@@ -41,8 +41,7 @@ int fake_write(uint8_t* data, size_t len) {
 }
 
 void fake_delay(uint32_t ms) {
-    uint32_t us = ms * 1000;
-    // usleep(us);
+    usleep(ms * 1000);
 }
 
 int main() {

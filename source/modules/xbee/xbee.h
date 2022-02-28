@@ -7,6 +7,9 @@
 #ifndef XBEE_H
 #define XBEE_H
 
+#include <stdint.h>
+#include <stdlib.h>
+
 #define XBEE_BROADCAST_ADDR 0x000000000000FFFF
 
 typedef enum {

@@ -89,7 +89,7 @@ xb_ret_t xb_sendto(uint64_t addr, uint8_t *data, size_t len) {
     memcpy(tx_buff + len + sizeof(xb_tx_frame_t), &check, 1);
 
     size_t write_len = len + sizeof(xb_tx_frame_t) + 1;
-    if (xb_write(tx_buff, write_len) < write_len) {
+    if (xb_write(tx_buff, write_len) != write_len) {
         // write error
         return XB_ERR;
     }
