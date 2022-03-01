@@ -12,7 +12,7 @@
 #define NIGEL_FLIGHT_COMPUTER_IMU_H
 
 #include "barometer.h"
-#include "stm32f4xx_hal.h"
+#include "stm32lf4xx_hal.h"
 #include <math.h>
 
 //TODO : set a proper timing
