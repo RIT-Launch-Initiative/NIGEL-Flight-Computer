@@ -18,7 +18,7 @@ int idle_init() {
     idle_task.default_priority = IDLE_PRIORITY;
     idle_task.task = &idle;
 
-    idle_ttid = ts_add(&idle);
+    idle_ttid = ts_add(&idle_task);
 
     if(idle_ttid == TS_ERR_TTID) {
         return -1;
