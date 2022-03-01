@@ -10,7 +10,7 @@
 uint16_t hton16(uint16_t n) {
     uint8_t ret[sizeof(uint16_t)];
 
-    for(ssize_t i = sizeof(uint16_t) - 1; i >= 0; i--) {
+    for(int i = sizeof(uint16_t) - 1; i >= 0; i--) {
         ret[i] = n;
         n >>= 8;
     }
@@ -21,7 +21,7 @@ uint16_t hton16(uint16_t n) {
 uint32_t hton32(uint32_t n) {
     uint8_t ret[sizeof(uint32_t)];
 
-    for(ssize_t i = sizeof(uint32_t) - 1; i >= 0; i--) {
+    for(int i = sizeof(uint32_t) - 1; i >= 0; i--) {
         ret[i] = n;
         n >>= 8;
     }
@@ -32,7 +32,7 @@ uint32_t hton32(uint32_t n) {
 uint64_t hton64(uint64_t n) {
     uint8_t ret[sizeof(uint64_t)];
 
-    for(ssize_t i = sizeof(uint64_t) - 1; i >= 0; i--) {
+    for(int i = sizeof(uint64_t) - 1; i >= 0; i--) {
         ret[i] = n;
         n >>= 8;
     }

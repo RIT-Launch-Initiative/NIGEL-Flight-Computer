@@ -25,13 +25,30 @@ typedef enum {
 //       cannot be commanded to API mode
 xb_ret_t xb_init(int (*write) (uint8_t* buff, size_t len), void (*delay)(uint32_t ms));
 
+// buffer to copy received data into (up to recv_free bytes)
+uint8_t* recv_buffer;
+size_t recv_free;
+
+// TODO move to a way that exposes underlying buffer so it can be directly written to
+
+/*
+// request a buffer of 'len' bytes to write received data into
+// a subsequent call to 'xb_rx_parse' will parse the latest data in the buffer
+uint8_t* xb_rx_buff(size_t len)
+
+// function that should be called when any data is received from the XBee (either over serial or SPI)
+// needs to be called by lower layer
+// parses the data in the last call to 'xb_rx_buff'
+void xb_rx_parse();
+*/
+
 // function that should be called when any data is received from the XBee (either over serial or SPI)
 // needs to be called by lower layer
 void xb_raw_recv(uint8_t* buff, size_t len);
 
 // attach a callback function to call when an rx frame is received
 // 'buff' points to the payload of length 'len' in the frame
-void xb_attach_rx_callback(void (*rx) (uint8_t* buff, size_t len));
+void xb_attach_rx_callback(void (*rx)(uint8_t* buff, size_t len));
 
 // set the default destination address of transmitted packets
 // assumes 'addr' is in system endianness
