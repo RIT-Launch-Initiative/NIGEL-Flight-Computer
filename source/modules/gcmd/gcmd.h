@@ -21,6 +21,6 @@ int gcmd_init();
 
 // parse a command from an input source
 // return -1 on failure, 1 otherwise
-int gcmd_parse(uint8_t* buff, size_t len);
+void gcmd_parse(uint8_t* buff, size_t len);
 
 #endif

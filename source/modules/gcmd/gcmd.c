@@ -28,16 +28,16 @@ int gcmd_init() {
     return 1;
 }
 
-int gcmd_parse(uint8_t* buff, size_t len) {
+void gcmd_parse(uint8_t* buff, size_t len) {
     if(len != sizeof(gcmd_t)) {
-        return -1;
+        return;
     }
 
     gcmd_t* cmd = (gcmd_t*)buff;
 
     if(cmd->seq_num != seq_num) {
         // TODO send some kind of error
-        return -1;
+        return;
     }
 
     void* f = hm_get(hm, cmd->control);
@@ -45,13 +45,11 @@ int gcmd_parse(uint8_t* buff, size_t len) {
     if(f == NULL) {
         // no such control number
         // TODO send some kind of error
-        return -1;
+        return;
     }
 
     seq_num++;
 
-    void (*func) (uint16_t) = (void (*)(uint16_t))f;
+    void (*func)(uint16_t) = (void (*)(uint16_t))f;
     func(cmd->state);
-
-    return 1;
 }

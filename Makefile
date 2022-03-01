@@ -71,12 +71,14 @@ source/modules/net/net.c \
 source/modules/hashmap/hashmap.c \
 source/modules/gcmd/gcmd.c \
 source/modules/spinlock/spinlock.c \
-source/modules/xbee/xbee.c
+source/modules/xbee/xbee.c \
+source/comm.c \
+source/idle.c
 
 # CPP sources
 CPP_SOURCES = \
 Core/Src/main.cpp \
-source/init/init.cpp
+source/init.cpp
 
 # ASM sources
 ASM_SOURCES =  \
@@ -147,7 +149,7 @@ C_INCLUDES =  \
 -Isource/modules/scheduler \
 -Isource/modules/sio \
 -Isource/modules/watchdog \
--Isource/init \
+-Isource \
 -Isource/modules/hashmap \
 -Isource/modules/gcmd \
 -Isource/modules/spinlock \

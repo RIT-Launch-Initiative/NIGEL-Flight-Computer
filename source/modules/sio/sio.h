@@ -6,6 +6,7 @@
 // 'fd' refers to a descriptor corresponding to the mapping of 'uarts' in sio_config.h
 
 // init module
+// return -1 on failure, 1 otherwise
 int sio_init();
 
 // find how many bytes are available on an I/O character device

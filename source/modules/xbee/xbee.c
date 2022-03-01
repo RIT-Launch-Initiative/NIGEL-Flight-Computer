@@ -8,34 +8,39 @@
 #include <stddef.h>
 #include <string.h>
 #include "net.h"
-#include "spinlock.h"
 #include "xbee.h"
 
 #define START_DELIMETER   0x7E
 #define TX_FRAME_TYPE     0x10
 #define RX_FRAME_TYPE     0x90
 #define AT_CMD_FRAME_TYPE 0x17
+#define RESERVED_VALUE    0xFEFF // in network order
+
+// static buffer sizes
+#define TX_BUFF_SIZE 1024 // bytes
+#define RX_BUFF_SIZE 2048 // bytes
 
 typedef struct {
     uint8_t start_delimiter;
     uint16_t length;
-} xb_header_t;
+} __attribute__((packed)) xb_header_t;
 
 typedef struct {
     xb_header_t header;
     uint8_t frame_type;
+    uint8_t frame_id;
     uint64_t dst_address_64;
     uint16_t reserved;
     uint8_t radius;
     uint8_t options;
-} xb_tx_frame_t;
+} __attribute__((packed)) xb_tx_frame_t;
 
 typedef struct {
     xb_header_t header;
     uint8_t frame_type;
     uint64_t src_address_64;
     uint16_t reserved;
-} xb_rx_frame_t;
+} __attribute__((packed)) xb_rx_frame_t;
 
 typedef struct {
     xb_header_t header;
@@ -45,24 +50,30 @@ typedef struct {
     uint16_t reserved;
     uint8_t options;
     uint8_t at_command[2];
-} xb_at_frame_t;
+} __attribute__((packed)) xb_at_frame_t;
 
 int (*xb_write)(uint8_t *buf, size_t len);
+void (*xb_delay)(uint32_t ms);
 
-// default to broadcast
-static uint64_t dst_addr = XBEE_BROADCAST_ADDR;
+static uint64_t default_dst = 0xFFFF000000000000; // broadcast address in network order
 static void (*rx_callback)(uint8_t *buff, size_t len);
-static uint8_t tx_buff[1024];
 
-xb_ret_t xb_tx(uint8_t *data, size_t len) {
+static uint8_t tx_buff[TX_BUFF_SIZE];
+
+xb_ret_t xb_send(uint8_t* data, size_t len) {
+    return xb_sendto(default_dst, data, len);
+}
+
+xb_ret_t xb_sendto(uint64_t addr, uint8_t *data, size_t len) {
     xb_tx_frame_t *frame = (xb_tx_frame_t *) tx_buff;
 
     frame->header.start_delimiter = START_DELIMETER;
     // length = payload + frame - header
     frame->header.length = hton16(len + sizeof(xb_tx_frame_t) - sizeof(xb_header_t));
     frame->frame_type = TX_FRAME_TYPE;
-    frame->dst_address_64 = dst_addr;
-    frame->reserved = hton16(0xFFFE);
+    frame->frame_id = 0;
+    frame->dst_address_64 = addr;
+    frame->reserved = RESERVED_VALUE;
     frame->radius = 0;
     frame->options = 0x80;
 
@@ -78,7 +89,7 @@ xb_ret_t xb_tx(uint8_t *data, size_t len) {
     memcpy(tx_buff + len + sizeof(xb_tx_frame_t), &check, 1);
 
     size_t write_len = len + sizeof(xb_tx_frame_t) + 1;
-    if (xb_write(tx_buff, write_len) < write_len) {
+    if (xb_write(tx_buff, write_len) != write_len) {
         // write error
         return XB_ERR;
     }
@@ -207,8 +218,8 @@ void xb_raw_recv(uint8_t *buff, size_t len) {
     }
 }
 
-void xb_set_dst(uint64_t addr) {
-    dst_addr = addr;
+void xb_set_default_dst(uint64_t addr) {
+    default_dst = hton64(addr);
 }
 
 static xb_ret_t xb_at_cmd(const char cmd[2], const char *param) {
@@ -221,7 +232,7 @@ static xb_ret_t xb_at_cmd(const char cmd[2], const char *param) {
     frame->header.length = hton16(sizeof(xb_at_frame_t) - sizeof(xb_header_t) + param_size);
     frame->frame_type = AT_CMD_FRAME_TYPE;
     frame->frame_id = 0;
-    frame->dst_address_64 = dst_addr;
+    frame->dst_address_64 = default_dst;
     frame->reserved = hton16(0xFFFE);
     frame->options = 0x02; // apply changes immediately on remote
     frame->at_command[0] = cmd[0];
@@ -268,8 +279,9 @@ xb_ret_t xb_cmd_dio(xb_dio_t dio, xb_dio_output_t output) {
     return xb_at_cmd(cmd, param);
 }
 
-xb_ret_t xb_init(int (*write)(uint8_t *buf, size_t len)) {
+xb_ret_t xb_init(int (*write)(uint8_t *buf, size_t len), void (*delay)(uint32_t ms)) {
     xb_write = write;
+    xb_delay = delay;
 
     // enter command mode
     if (xb_write((uint8_t*)"+++", 3) < 3) {
@@ -279,7 +291,7 @@ xb_ret_t xb_init(int (*write)(uint8_t *buf, size_t len)) {
 
     // the line should be silent for 1s
     // wait for 1.5s to be safe
-    spinlock(1500);
+    delay(1500);
 
     // send command to put into API mode
     const char *at_cmd = "ATAP1\r"; // API mode without escapes
