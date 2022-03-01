@@ -8,11 +8,8 @@
  *  Modified by Aaron Chan on March 1st, 2022
  */
 
-#ifndef NIGEL_FLIGHT_COMPUTER_IMU_H
-#define NIGEL_FLIGHT_COMPUTER_IMU_H
-
-#include "barometer.h"
-#include "stm32f4xx_hal.h"
+#include "imu.c"
+#include "stm32lf4xx_hal.h"
 #include <math.h>
 
 //TODO : set a proper timing
@@ -218,10 +215,10 @@ float Barometer_getAltitude(bool calculate) {
 }
 
 void Barometer_calculate() {
-    int32_t dT;
+    int32_t dT; // Temperature difference
     int64_t TEMP, OFF, SENS, P;
     uint32_t D1, D2;
-    float press, r, c;
+    float press, r, c; // TODO: Convert to int possibly for efficiency
 
     D1 = ms5611_readRawPressure();
     D2 = ms5611_readRawTemp();
@@ -250,5 +247,3 @@ void Barometer_calculate() {
     c = 1.0 / 5.255;
     altitude = (1 - pow(r, c)) * 44330.77;
 }
-
-#endif //NIGEL_FLIGHT_COMPUTER_IMU_H
