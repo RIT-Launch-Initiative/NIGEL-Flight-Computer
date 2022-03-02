@@ -8,12 +8,13 @@
  *  Modified by Aaron Chan on March 1st, 2022
  */
 
-#include "imu.c"
+#ifndef NIGEL_FLIGHT_COMPUTER_ALTIMETER_H
+#define NIGEL_FLIGHT_COMPUTER_ALTIMETER_H
+
+#include "altimeter.h"
 #include "stm32lf4xx_hal.h"
 #include <math.h>
 
-//TODO : set a proper timing
-#define SPI_TIMEOUT 50 //in ms
 
 #define MS5611_EN HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, GPIO_PIN_RESET);
 #define MS5611_DIS HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, GPIO_PIN_SET);
@@ -38,11 +39,11 @@
 #define TEMP_OSR_2048     0x56
 #define TEMP_OSR_4096     0x58
 
-#define CONVERSION_OSR_256  1
-#define CONVERSION_OSR_512  2
-#define CONVERSION_OSR_1024 3
-#define CONVERSION_OSR_2048 5
-#define CONVERSION_OSR_4096 10
+//#define CONVERSION_OSR_256  1
+//#define CONVERSION_OSR_512  2
+//#define CONVERSION_OSR_1024 3
+//#define CONVERSION_OSR_2048 5
+//#define CONVERSION_OSR_4096 10
 
 static uint16_t prom[6];
 extern SPI_HandleTypeDef hspi2;
@@ -50,7 +51,6 @@ extern SPI_HandleTypeDef hspi2;
 //min OSR by default
 static uint8_t pressAddr = PRESSURE_OSR_256;
 static uint8_t tempAddr = TEMP_OSR_256;
-static uint32_t convDelay = CONVERSION_OSR_256;
 
 static int32_t temperature;
 static int32_t pressure;
@@ -89,10 +89,8 @@ static uint32_t ms5611_readRawPressure();
 
 static void ms5611_init() {
     MS5611_DIS
-    HAL_Delay(10);
 
     ms5611_write(CMD_RESET);
-    HAL_Delay(10);
 
     prom[0] = ms5611_read16bits(CMD_PROM_C1);
     prom[1] = ms5611_read16bits(CMD_PROM_C2);
@@ -104,7 +102,7 @@ static void ms5611_init() {
 
 static void ms5611_write(uint8_t data) {
     MS5611_EN
-    HAL_SPI_Transmit(&hspi2, &data, 1, SPI_TIMEOUT);
+    HAL_SPI_Transmit_IT(&hspi2, &data, 1);
     MS5611_DIS
 }
 
@@ -112,7 +110,7 @@ static uint16_t ms5611_read16bits(uint8_t reg) {
     uint8_t byte[3];
     uint16_t return_value;
     MS5611_EN
-    HAL_SPI_TransmitReceive(&hspi2, &reg, byte, 3, SPI_TIMEOUT);
+    HAL_SPI_TransmitReceive_IT(&hspi2, &reg, byte, 3);
     MS5611_DIS
     /**
      * We dont care about byte[0] because that is what was recorded while
@@ -128,7 +126,7 @@ static uint32_t ms5611_read24bits(uint8_t reg) {
     uint8_t byte[4];
     uint32_t return_value;
     MS5611_EN
-    HAL_SPI_TransmitReceive(&hspi2, &reg, byte, 4, SPI_TIMEOUT);
+    HAL_SPI_TransmitReceive_IT(&hspi2, &reg, byte, 4);
     MS5611_DIS
     return_value = ((uint32_t) byte[1] << 16) | ((uint32_t)(byte[2] << 8)) | (byte[3]);
     return return_value;
@@ -138,8 +136,6 @@ static uint32_t ms5611_readRawTemp() {
     uint32_t D2;
     //Convert temp
     ms5611_write(tempAddr);
-    //Conversion Time
-    HAL_Delay(convDelay);
     //Read ADC
     D2 = ms5611_read24bits(0x00);
 
@@ -151,7 +147,6 @@ static uint32_t ms5611_readRawPressure() {
     //Convert pressure
     ms5611_write(pressAddr);
     //Conversion time
-    HAL_Delay(convDelay);
     //Read ADC
     D1 = ms5611_read24bits(0x00);
 
@@ -168,27 +163,22 @@ void Barometer_setOSR(OSR osr) {
         case OSR_256:
             pressAddr = PRESSURE_OSR_256;
             tempAddr = TEMP_OSR_256;
-            convDelay = CONVERSION_OSR_256;
             break;
         case OSR_512:
             pressAddr = PRESSURE_OSR_512;
             tempAddr = TEMP_OSR_512;
-            convDelay = CONVERSION_OSR_512;
             break;
         case OSR_1024:
             pressAddr = PRESSURE_OSR_1024;
             tempAddr = TEMP_OSR_1024;
-            convDelay = CONVERSION_OSR_1024;
             break;
         case OSR_2048:
             pressAddr = PRESSURE_OSR_2048;
             tempAddr = TEMP_OSR_2048;
-            convDelay = CONVERSION_OSR_2048;
             break;
         case OSR_4096:
             pressAddr = PRESSURE_OSR_4096;
             tempAddr = TEMP_OSR_4096;
-            convDelay = CONVERSION_OSR_4096;
             break;
     }
 }
@@ -215,10 +205,10 @@ float Barometer_getAltitude(bool calculate) {
 }
 
 void Barometer_calculate() {
-    int32_t dT; // Temperature difference
+    int32_t dT;
     int64_t TEMP, OFF, SENS, P;
     uint32_t D1, D2;
-    float press, r, c; // TODO: Convert to int possibly for efficiency
+    float press, r, c;
 
     D1 = ms5611_readRawPressure();
     D2 = ms5611_readRawTemp();
@@ -247,3 +237,5 @@ void Barometer_calculate() {
     c = 1.0 / 5.255;
     altitude = (1 - pow(r, c)) * 44330.77;
 }
+
+#endif //NIGEL_FLIGHT_COMPUTER_IMU_H
