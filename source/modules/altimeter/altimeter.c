@@ -12,7 +12,7 @@
 #define NIGEL_FLIGHT_COMPUTER_ALTIMETER_H
 
 #include "altimeter.h"
-#include "stm32lf4xx_hal.h"
+#include "stm32lf4xx_hal_spi.h"
 #include <math.h>
 
 
