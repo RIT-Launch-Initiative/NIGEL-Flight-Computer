@@ -11,9 +11,10 @@
 #ifndef NIGEL_FLIGHT_COMPUTER_ALTIMETER_H
 #define NIGEL_FLIGHT_COMPUTER_ALTIMETER_H
 
-#include "altimeter.h"
-#include "stm32lf4xx_hal_spi.h"
+
 #include <math.h>
+#include "altimeter.h"
+#include "main.h"
 
 
 #define MS5611_EN HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, GPIO_PIN_RESET);
@@ -163,7 +164,7 @@ void barometer_init() {
     ms5611_init();
 }
 
-void Barometer_setOSR(OSR osr) {
+void barometer_set_OSR(OSR osr) {
     switch (osr) {
         default:
         case OSR_256:
@@ -194,23 +195,23 @@ void Barometer_setOSR(OSR osr) {
     }
 }
 
-int32_t Barometer_getTemp(bool calculate) {
+int32_t barometer_get_temp(bool calculate) {
     if (calculate) {
-        Barometer_calculate();
+        barometer_calculate();
     }
     return temperature;
 }
 
 int32_t barometer_get_pressure(bool calculate) {
     if (calculate) {
-        Barometer_calculate();
+        barometer_calculate();
     }
     return pressure;
 }
 
 float barometer_get_altitude(bool calculate) {
     if (calculate) {
-        Barometer_calculate();
+        barometer_calculate();
     }
     return altitude;
 }
