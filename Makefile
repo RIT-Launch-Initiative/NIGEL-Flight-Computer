@@ -72,6 +72,7 @@ source/modules/hashmap/hashmap.c \
 source/modules/gcmd/gcmd.c \
 source/modules/spinlock/spinlock.c \
 source/modules/xbee/xbee.c \
+source/modules/altimeter/altimeter.c \
 source/comm.c \
 source/idle.c
 
@@ -154,7 +155,8 @@ C_INCLUDES =  \
 -Isource/modules/gcmd \
 -Isource/modules/spinlock \
 -Isource/modules/xbee \
--Isource/modules/net
+-Isource/modules/net \
+-Isource/modules/altimeter
 
 
 # compile gcc flags

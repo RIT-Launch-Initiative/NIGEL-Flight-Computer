@@ -8,8 +8,6 @@
  *  Modified by Aaron Chan on March 1st, 2022
  */
 
-#include "altimeter.c"
-#include "stm32lf4xx_hal.h"
 #include <math.h>
 
 //TODO : set a proper timing
@@ -158,7 +156,7 @@ static uint32_t ms5611_readRawPressure() {
     return D1;
 }
 
-void Barometer_init() {
+void barometer_init() {
     ms5611_init();
 }
 
@@ -200,21 +198,21 @@ int32_t Barometer_getTemp(bool calculate) {
     return temperature;
 }
 
-int32_t Barometer_getPressure(bool calculate) {
+int32_t barometer_get_pressure(bool calculate) {
     if (calculate) {
         Barometer_calculate();
     }
     return pressure;
 }
 
-float Barometer_getAltitude(bool calculate) {
+float barometer_get_altitude(bool calculate) {
     if (calculate) {
         Barometer_calculate();
     }
     return altitude;
 }
 
-void Barometer_calculate() {
+void barometer_calculate() {
     int32_t dT; // Temperature difference
     int64_t TEMP, OFF, SENS, P;
     uint32_t D1, D2;
