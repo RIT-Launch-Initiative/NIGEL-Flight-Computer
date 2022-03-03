@@ -8,9 +8,6 @@
  *  Modified by Aaron Chan on March 1st, 2022
  */
 
-#ifndef NIGEL_FLIGHT_COMPUTER_ALTIMETER_H
-#define NIGEL_FLIGHT_COMPUTER_ALTIMETER_H
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <math.h>
@@ -251,5 +248,3 @@ void barometer_calculate() {
     c = 1.0 / 5.255;
     altitude = (1 - pow(r, c)) * 44330.77;
 }
-
-#endif //NIGEL_FLIGHT_COMPUTER_IMU_H
