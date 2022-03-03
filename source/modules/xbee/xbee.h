@@ -25,13 +25,14 @@ typedef enum {
 //       cannot be commanded to API mode
 xb_ret_t xb_init(int (*write) (uint8_t* buff, size_t len), void (*delay)(uint32_t ms));
 
+/*
+// TODO move to a way that exposes underlying buffer so it can be directly written to
 // buffer to copy received data into (up to recv_free bytes)
+
 uint8_t* recv_buffer;
 size_t recv_free;
 
-// TODO move to a way that exposes underlying buffer so it can be directly written to
 
-/*
 // request a buffer of 'len' bytes to write received data into
 // a subsequent call to 'xb_rx_parse' will parse the latest data in the buffer
 uint8_t* xb_rx_buff(size_t len)
