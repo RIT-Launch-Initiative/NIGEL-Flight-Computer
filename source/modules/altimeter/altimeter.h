@@ -21,12 +21,12 @@ typedef enum OSR {
     OSR_1024,
     OSR_2048,
     OSR_4096
-}OSR;
+} OSR;
 
 /**
  * @brief Init the Barometer with default parameters
  */
-extern void Barometer_init();
+extern void barometer_init();
 
 /**
  * @brief Set the OSR (Oversampling rate)

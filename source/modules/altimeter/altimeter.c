@@ -11,10 +11,12 @@
 #ifndef NIGEL_FLIGHT_COMPUTER_ALTIMETER_H
 #define NIGEL_FLIGHT_COMPUTER_ALTIMETER_H
 
-
+#include <stdint.h>
+#include <stdbool.h>
 #include <math.h>
-#include "altimeter.h"
 #include "main.h"
+#include "altimeter.h"
+#include "stm32l4xx_hal_spi.h"
 
 
 #define MS5611_EN HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, GPIO_PIN_RESET);
@@ -106,7 +108,7 @@ static void ms5611_init() {
 
 static void ms5611_write(uint8_t data) {
     MS5611_EN
-    HAL_SPI_Transmit(&hspi2, &data, 1);
+    HAL_SPI_Transmit_DMA(&hspi2, &data, 1);
     MS5611_DIS
 }
 
@@ -114,7 +116,7 @@ static uint16_t ms5611_read16bits(uint8_t reg) {
     uint8_t byte[3];
     uint16_t return_value;
     MS5611_EN
-    HAL_SPI_TransmitReceive(&hspi2, &reg, byte, 3);
+    HAL_SPI_TransmitReceive_DMA(&hspi2, &reg, byte, 3);
     MS5611_DIS
     /**
      * We dont care about byte[0] because that is what was recorded while
@@ -130,7 +132,7 @@ static uint32_t ms5611_read24bits(uint8_t reg) {
     uint8_t byte[4];
     uint32_t return_value;
     MS5611_EN
-    HAL_SPI_TransmitReceive(&hspi2, &reg, byte, 4);
+    HAL_SPI_TransmitReceive_DMA(&hspi2, &reg, byte, 4);
     MS5611_DIS
     return_value = ((uint32_t) byte[1] << 16) | ((uint32_t)(byte[2] << 8)) | (byte[3]);
     return return_value;
