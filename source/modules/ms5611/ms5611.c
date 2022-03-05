@@ -12,7 +12,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include "main.h"
-#include "altimeter.h"
+#include "ms5611.h"
 #include "stm32l4xx_hal_spi.h"
 
 
