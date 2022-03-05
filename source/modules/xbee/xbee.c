@@ -3,6 +3,7 @@
  *
  * @author Aaron Chan
  */
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -53,6 +54,7 @@ typedef struct {
 } __attribute__((packed)) xb_at_frame_t;
 
 int (*xb_write)(uint8_t *buf, size_t len);
+
 void (*xb_delay)(uint32_t ms);
 
 static uint64_t default_dst = 0xFFFF000000000000; // broadcast address in network order
@@ -60,7 +62,7 @@ static void (*rx_callback)(uint8_t *buff, size_t len);
 
 static uint8_t tx_buff[TX_BUFF_SIZE];
 
-xb_ret_t xb_send(uint8_t* data, size_t len) {
+xb_ret_t xb_send(uint8_t *data, size_t len) {
     return xb_sendto(default_dst, data, len);
 }
 
@@ -123,10 +125,10 @@ void xb_raw_recv(uint8_t *buff, size_t len) {
     size_t i = 0;
 
     start_switch:
-    switch(state) {
+    switch (state) {
         case WAITING_FOR_FRAME:
-            for(; i < len; i++) {
-                if(buff[i] == START_DELIMETER) {
+            for (; i < len; i++) {
+                if (buff[i] == START_DELIMETER) {
                     state = WAITING_FOR_LENGTH;
                     rx_index = 0;
                     i++;
@@ -134,17 +136,17 @@ void xb_raw_recv(uint8_t *buff, size_t len) {
                 }
             }
 
-            if(state == WAITING_FOR_FRAME) {
+            if (state == WAITING_FOR_FRAME) {
                 break;
             } // otherwise start parsing header
 
         case WAITING_FOR_LENGTH:
-            for(; i < len; i++) {
+            for (; i < len; i++) {
                 rx_buff[rx_index] = buff[i];
                 rx_index++;
-                if(rx_index == 2) {
+                if (rx_index == 2) {
                     i++;
-                    payload_size = ntoh16(*((uint16_t*)rx_buff));
+                    payload_size = ntoh16(*((uint16_t *) rx_buff));
                     to_read = payload_size + 1; // read checksum too
 
                     // TODO maybe just get rid of this and read all kinds of frames
@@ -163,22 +165,22 @@ void xb_raw_recv(uint8_t *buff, size_t len) {
                 }
             }
 
-            if(state == WAITING_FOR_LENGTH) {
+            if (state == WAITING_FOR_LENGTH) {
                 break;
             }
 
         case READING_PAYLOAD:
-            for(; i < len; i++) {
+            for (; i < len; i++) {
                 rx_buff[rx_index++] = buff[i];
                 to_read--;
 
-                if(to_read == 0) {
+                if (to_read == 0) {
                     uint8_t checksum = 0xFF - check;
                     if (checksum == rx_buff[rx_index - 1]) {
                         // pick a callback based on the frame type
-                        switch(rx_buff[0]) {
+                        switch (rx_buff[0]) {
                             case RX_FRAME_TYPE:
-                                if(rx_callback) {
+                                if (rx_callback) {
                                     rx_callback(rx_buff + 12, payload_size - 12);
                                 }
                                 break;
@@ -197,7 +199,7 @@ void xb_raw_recv(uint8_t *buff, size_t len) {
                 }
 
 
-                if(rx_index == RX_BUFF_SIZE) {
+                if (rx_index == RX_BUFF_SIZE) {
                     // can't read anymore, throw away packet
                     state = WAIT_FOR_FRAME_END;
                     goto start_switch;
@@ -205,11 +207,11 @@ void xb_raw_recv(uint8_t *buff, size_t len) {
             }
             break; // should immediately fail next loop anyways
         case WAIT_FOR_FRAME_END:
-            for(; i < len; i++) {
+            for (; i < len; i++) {
                 // do nothing
                 to_read--;
 
-                if(to_read == 0) {
+                if (to_read == 0) {
                     // restart now
                     state = WAITING_FOR_FRAME;
                     goto start_switch;
@@ -284,7 +286,7 @@ xb_ret_t xb_init(int (*write)(uint8_t *buf, size_t len), void (*delay)(uint32_t 
     xb_delay = delay;
 
     // enter command mode
-    if (xb_write((uint8_t*)"+++", 3) < 3) {
+    if (xb_write((uint8_t *) "+++", 3) < 3) {
         // write failure
         return XB_ERR;
     }
@@ -296,7 +298,7 @@ xb_ret_t xb_init(int (*write)(uint8_t *buf, size_t len), void (*delay)(uint32_t 
     // send command to put into API mode
     const char *at_cmd = "ATAP1\r"; // API mode without escapes
 
-    if (xb_write((uint8_t*)at_cmd, 6) < 6) {
+    if (xb_write((uint8_t *) at_cmd, 6) < 6) {
         // write failure
         return XB_ERR;
     }

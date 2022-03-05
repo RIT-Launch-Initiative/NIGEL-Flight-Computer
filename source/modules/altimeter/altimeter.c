@@ -87,6 +87,13 @@ static uint32_t ms5611_readRawTemp();
 
 static uint32_t ms5611_readRawPressure();
 
+extern HAL_StatusTypeDef HAL_SPI_Transmit(SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+
+extern HAL_StatusTypeDef HAL_SPI_Receive(SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+
+extern HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, uint8_t *pTxData, uint8_t *pRxData,
+                                             uint16_t Size, uint32_t Timeout);
+
 
 static void ms5611_init() {
     MS5611_DIS
@@ -105,7 +112,7 @@ static void ms5611_init() {
 
 static void ms5611_write(uint8_t data) {
     MS5611_EN
-    HAL_SPI_Transmit_DMA(&hspi2, &data, 1);
+    HAL_SPI_Transmit(&hspi2, &data, 1, 0);
     MS5611_DIS
 }
 
@@ -113,7 +120,7 @@ static uint16_t ms5611_read16bits(uint8_t reg) {
     uint8_t byte[3];
     uint16_t return_value;
     MS5611_EN
-    HAL_SPI_TransmitReceive_DMA(&hspi2, &reg, byte, 3);
+    HAL_SPI_TransmitReceive(&hspi2, &reg, byte, 3, 0);
     MS5611_DIS
     /**
      * We dont care about byte[0] because that is what was recorded while
@@ -129,7 +136,7 @@ static uint32_t ms5611_read24bits(uint8_t reg) {
     uint8_t byte[4];
     uint32_t return_value;
     MS5611_EN
-    HAL_SPI_TransmitReceive_DMA(&hspi2, &reg, byte, 4);
+    HAL_SPI_TransmitReceive(&hspi2, &reg, byte, 4, 0);
     MS5611_DIS
     return_value = ((uint32_t) byte[1] << 16) | ((uint32_t)(byte[2] << 8)) | (byte[3]);
     return return_value;
