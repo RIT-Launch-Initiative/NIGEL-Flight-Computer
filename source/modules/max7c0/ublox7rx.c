@@ -3,8 +3,10 @@
 /*
  * @brief	Parse GGA sentence into gps_packet_t
  *
- * @param	sentence	pointer to beginning of GGA sentence
- * @param	dest		pointer to GPS packet
+ * @param	sentence	Beginning of GGA sentence
+ * @param	dest		Pointer to GPS packet
+ * @param	n			Maximum number of characters to read. Modifies
+ * 						sentence[n] if null not found before n characters.
  * @retval	0 for success, -1 for failure (as determined by sscanf return value)
  */
 int32_t parse_gga(char* sentence, gps_packet_t* dest, size_t n)
@@ -30,6 +32,7 @@ int32_t parse_gga(char* sentence, gps_packet_t* dest, size_t n)
 	int hours, minutes, lat_deg, lon_deg;
 	float lat_min, lon_min;
 
+	// format includes all fields to validate that this is a GGA sentence
 	ret = sscanf(
 		sentence, 
 		"$%*2cGGA,%2d%2d%f,%2d%f,%c,%3d%f,%c,%1d,%2d,%*f,%f,%*f,%*f,%*f,%*2c\r\n",
