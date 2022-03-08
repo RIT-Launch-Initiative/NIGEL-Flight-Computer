@@ -52,7 +52,7 @@ int32_t platform_write(void *handle, uint8_t reg, uint8_t *buf, uint16_t len) {
 	// */
 	
 	/** Non-blocking
-	return 
+	 
 	 */
 }
 
@@ -64,7 +64,7 @@ int32_t platform_read(void *handle, uint8_t reg, uint8_t *buf, uint16_t len) {
 	// */
 	
 	/** Non-blocking
-	return
+	
 	// */
 	
 }
