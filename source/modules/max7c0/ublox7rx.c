@@ -11,19 +11,16 @@
  */
 int32_t parse_gga(char* sentence, gps_packet_t* dest, size_t n)
 {
-	// adds null at position n if no null before n for sscanf saftey
-	int ret = 1;
-
 	// this part is untested
-	for (int i = 0; i < n; i++) {
-		if sentence[i] == '\0' {
-			ret = 0;
+	// adds null at position n if no null before n for sscanf saftey
+	int i;
+	for (i = 0; i < n; i++) {
+		if (sentence[i] == '\0') {
 			break;
 		}
 	}
-	if (ret) {
+	if (i == n) {
 		sentence[n] = '\0';
-		ret = 0;
 	}
 	
 	// everything after this is tested
@@ -33,7 +30,7 @@ int32_t parse_gga(char* sentence, gps_packet_t* dest, size_t n)
 	float lat_min, lon_min;
 
 	// format includes all fields to validate that this is a GGA sentence
-	ret = sscanf(
+	int ret = sscanf(
 		sentence, 
 		"$%*2cGGA,%2d%2d%f,%2d%f,%c,%3d%f,%c,%1d,%2d,%*f,%f,%*f,%*f,%*f,%*2c\r\n",
 		&hours, &minutes, &(dest->time), // parts of time
