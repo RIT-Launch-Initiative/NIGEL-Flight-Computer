@@ -72,7 +72,7 @@ source/modules/hashmap/hashmap.c \
 source/modules/gcmd/gcmd.c \
 source/modules/spinlock/spinlock.c \
 source/modules/xbee/xbee.c \
-source/modules/altimeter/ms5611.c \
+source/modules/ms5611/ms5611.c \
 source/comm.c \
 source/idle.c
 
