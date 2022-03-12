@@ -72,9 +72,9 @@ source/modules/hashmap/hashmap.c \
 source/modules/gcmd/gcmd.c \
 source/modules/spinlock/spinlock.c \
 source/modules/xbee/xbee.c \
-source/modules/altimeter/altimeter.c \
 source/comm.c \
-source/idle.c
+source/idle.c \
+source/modules/max7c0/ublox7rx.c
 
 # CPP sources
 CPP_SOURCES = \
@@ -156,7 +156,7 @@ C_INCLUDES =  \
 -Isource/modules/spinlock \
 -Isource/modules/xbee \
 -Isource/modules/net \
--Isource/modules/altimeter
+-Isource/modules/max7c0
 
 
 # compile gcc flags
