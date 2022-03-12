@@ -4,7 +4,7 @@
 #define GGA_TEST_2 "$GPGGA,092725.00,4717.11399,N,00833.91590,E,1,08,1.01,499.6,M,48.0,M,,*5B\r\n"
 #define GGA_TEST_BROKEN "$GPGGA,115739.00,.8441367,N,09147.4416929,W,4,13,0.9,255,M,-32.00,M,01,0000*6E\r\n"
 #define PACKET_POS_FORMAT "Epoch time: %f [s]\n Latitude: %f [deg N], Longitude: %f [deg E], Altitude: %f [m ASL]\n"
-#define PACKET_QUAL_FORMAT "Fix: %d, %d sattelites\n"
+#define PACKET_QUAL_FORMAT "Fix: %d, %d satellites\n"
 // @}
 
 void print_gps_packet(gps_packet_t packet)
@@ -18,6 +18,7 @@ void print_gps_packet(gps_packet_t packet)
 		packet.quality, packet.satts
 	);
 }
+
 int main()
 {
 	gps_packet_t packet;
