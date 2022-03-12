@@ -8,3 +8,5 @@ build/*
 
 CMakeLists.txt
 cmake-build-debug
+
+tags
