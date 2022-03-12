@@ -1,12 +1,15 @@
 /*
- * barometer.h
+ *  BMI085 IMU Module
  *
  *  Created on: 5 oct. 2018
  *      Author: alex
+ *      https://github.com/Pyponou/barometer_ms5611
+ *
+ *  Modified by Aaron Chan on March 1st, 2022
  */
 
-#ifndef NIGEL_FLIGHT_COMPUTER_ALTIMETER_H
-#define NIGEL_FLIGHT_COMPUTER_ALTIMETER_H
+#ifndef NIGEL_FLIGHT_COMPUTER_MS5611_H
+#define NIGEL_FLIGHT_COMPUTER_MS5611_H
 
 #include <stdint.h>
 #include <stdbool.h> // Gross

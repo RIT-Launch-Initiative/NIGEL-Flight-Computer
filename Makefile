@@ -72,9 +72,10 @@ source/modules/hashmap/hashmap.c \
 source/modules/gcmd/gcmd.c \
 source/modules/spinlock/spinlock.c \
 source/modules/xbee/xbee.c \
-source/comm.c \
-source/idle.c \
+source/modules/ms5611/ms5611.c \
 source/modules/max7c0/ublox7rx.c
+source/comm.c \
+source/idle.c
 
 # CPP sources
 CPP_SOURCES = \
