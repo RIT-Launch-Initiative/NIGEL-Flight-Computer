@@ -35,43 +35,7 @@
   * @{
   *
   */
-/**
- * @defgroup	Platform read/write
- * @brief		Implements platform_read and platform_write using HAL's
- * 				I2C
- *
- * @{
- *
- */
 
-int32_t platform_write(void *handle, uint8_t reg, uint8_t *buf, uint16_t len) {
-	/** Blocking */
-    return (int32_t)HAL_I2C_Mem_Write(
-			handle, H3LIS100DL_I2C_ADDRESS, reg, 1, buf, len, H3LIS100DL_TIMEOUT
-	);  
-	// */
-	
-	/** Non-blocking
-	 
-	 */
-}
-
-int32_t platform_read(void *handle, uint8_t reg, uint8_t *buf, uint16_t len) {
-	/** Blocking */
-    return (int32_t)HAL_I2C_Mem_Read(
-			handle, H3LIS100DL_I2C_ADDRESS, reg, 1, buf, len, H3LIS100DL_TIMEOUT
-	);  
-	// */
-	
-	/** Non-blocking
-	
-	// */
-	
-}
-
-/**
- * }
- */
 /**
   * @brief  Read generic device register
   *

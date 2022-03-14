@@ -172,8 +172,6 @@ typedef struct
 #define H3LIS100DL_I2C_ADD_L     0x31U
 #define H3LIS100DL_I2C_ADD_H     0x33U
 
-// SAO is pulled to VCC on the schematic
-#define H3LIS100DL_I2C_ADDRESS	 0x33U 
 
 // timeout [ms] --- TODO: figure out what this should actually be
 #define H3LIS100DL_TIMEOUT 100
@@ -480,7 +478,7 @@ typedef union
 int32_t platform_write(void* handle, uint8_t Reg, 
 					   const uint8_t* Bufp, 
 					   uint16_t len);
-int32_t platfrom_read(void* handle, uint8_t	Reg, 
+int32_t platform_read(void* handle, uint8_t	Reg, 
 					  uint8_t* Bufp, 
 					  uint16_t len);
 
