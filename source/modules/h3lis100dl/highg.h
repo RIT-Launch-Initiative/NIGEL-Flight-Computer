@@ -1,7 +1,9 @@
+// This code is untested
+
 #include "h3lis100dl_reg.h"
 
-#ifndef HIGHG
-#define HIGHG
+#ifndef HIGHG_H
+#define HIGHG_H
 
 // timeout in ms
 #define H3LIS100DL_I2C_TIMEOUT 100 
@@ -15,15 +17,12 @@ typedef struct {
 	float z;
 } accel_t;
 
-// Initalize and return interface struct
-stmdev_ctx_t init_highg(void* handle);
-
-/** Puts acceleration into acceleration struct given pointed to by dest
- * Returns
- * 0: success
- * 1-3: read failure (see HAL status)
- * -1: No new data
- *  	Does not conflict with HAL statuses, which are all nonnegative
+/**
+ * @brief	Gets xyz acceleration and writes to struct
+ *
+ * @param	ctx		H3LIS100DLTR's interface struct
+ * @param	dest	Acceleration struct to write to
+ * @retval			0: success; -1: no new data; 1-3: I2C failure (HAL status)
  */
-int32_t highg_get_accel(stmdev_ctx_t* ctx, accel_t* dest);
+int highg_get_accel(stmdev_ctx_t* ctx, accel_t* dest);
 #endif
