@@ -30,7 +30,7 @@ typdef enum {
  * Initialize the runcam module
  * @return RC_OK or RC_ERR
  */
-rc_ret_t rc_init(void);
+rc_ret_t rc_init(void); // TODO: Add any necessary function setters to params
 
 /**
  * Execute a command on the runcam
