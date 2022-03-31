@@ -4,6 +4,6 @@
 // number of nodes to preallocate
 // this is the max number of nodes that can be used by all queues
 // each node is 12 bytes
-#define NUM_QUEUE_NODES 100
+#define NUM_QUEUE_NODES 3
 
 #endif

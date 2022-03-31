@@ -8,7 +8,8 @@ typedef struct {
     void* prev;
 } q_node_t;
 
-// preallocate nodes
+// preallocated nodes
+size_t next_free = 0;
 static q_node_t prealloc_nodes[NUM_QUEUE_NODES];
 
 // maps which nodes are free
@@ -18,10 +19,20 @@ static uint8_t free_nodes[NUM_QUEUE_NODES];
 
 static q_node_t* alloc_node() {
     // search for a free node from the preallocated nodes
-    for(size_t i = 0; i < NUM_QUEUE_NODES; i++) {
+    for(size_t i = next_free; i < NUM_QUEUE_NODES; i++) {
         if(!free_nodes[i]) {
             // mark as free
             free_nodes[i] = 1;
+            next_free = (i + 1) % NUM_QUEUE_NODES;
+            return &(prealloc_nodes[i]);
+        }
+    }
+
+    for(size_t i = 0; i < next_free; i++) {
+        if(!free_nodes[i]) {
+            // mark as free
+            free_nodes[i] = 1;
+            next_free = (i + 1) % NUM_QUEUE_NODES;
             return &(prealloc_nodes[i]);
         }
     }
@@ -35,6 +46,7 @@ static void dealloc_node(q_node_t* node) {
         if(node == (prealloc_nodes + i)) {
             // mark it as freed
             free_nodes[i] = 0;
+            next_free = i; // the next allocate is a freebie
         }
     }
     // otherwise an invalid address was passed in and we don't have to do anything
