@@ -138,6 +138,9 @@ int main() {
         printf("all transmit data matched expected data\n");
     }
 
+    printf("\nsending remote AT command\n");
+    xb_cmd_remote_dio(XB_DIO12, XB_DIO_HIGH);
+
     printf("\n\ntest complete\n");
 
     return 0;
