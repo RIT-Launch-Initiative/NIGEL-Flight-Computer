@@ -14,34 +14,44 @@ typedef enum {
  * Open a new file for writing data for a new flight.
  * @return FS Status
  */
-FS_STATUS fs_new_file();
-
+FS_STATUS fs_new();
 
 /**
- * Open an existing file for writing data.
- * @param filename The name of the file to open.
- * @return FS Status
+ * Close the opened file
+ * @return
  */
-FS_STATUS fs_open_file(char *filename);
+FS_STATUS fs_close();
 
 /**
- * Close the currently open file.
- *
- * @return FS Status
+ * Write bytes to file
+ * @param data
+ * @param len
+ * @return
  */
-FS_STATUS fs_close_file();
+FS_STATUS fs_write(uint8_t *data, uint16_t len);
 
 /**
- * Dump files into a descriptor
+ * Dump files out to the file descriptor
  * @param descriptor
- * @return FS Status
+ * @return FS_STATUS
  */
 FS_STATUS fs_dump_files(FILE *descriptor);
 
 /**
- * Wipes all flight data
- * @return
+ * Allow files to be overwritten if out of space.
+ */
+void fs_toggle_overwrite();
+
+/**
+ * Wipes flight data
+ * @return FS_STATUS
  */
 FS_STATUS fs_wipe();
+
+/**
+ * Initialize the file system.
+ * @return FS_STATUS
+ */
+FS_STATUS fs_init();
 
 #endif //NIGEL_FLIGHT_COMPUTER_FILESYS_H
