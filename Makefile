@@ -157,7 +157,8 @@ C_INCLUDES =  \
 -Isource/modules/spinlock \
 -Isource/modules/xbee \
 -Isource/modules/net \
--Isource/modules/max7c0
+-Isource/modules/max7c0 \
+-Isource/modules/filesys
 
 
 # compile gcc flags

@@ -1,3 +1,9 @@
+/**
+ * File System for writing flight data
+ *
+ * @author Aaron Chan
+ */
+
 #ifndef NIGEL_FLIGHT_COMPUTER_FILESYS_H
 #define NIGEL_FLIGHT_COMPUTER_FILESYS_H
 
@@ -7,7 +13,8 @@ typedef enum {
     FS_OK,
     FS_FULL,
     FS_UNOPENED,
-    FS_NOT_FOUND
+    FS_NOT_FOUND,
+    FS_UNWRITABLE,
 } FS_STATUS;
 
 /**
