@@ -7,6 +7,7 @@ static int WRITEABLE = 0;
 static FILE *current_file = NULL;
 static char *PAGE_BUFFER = NULL;
 static int PAGE_BUFFER_SIZE = 512;
+static int8_t buffer_index = 0;
 
 
 FS_STATUS fs_new() {
@@ -39,12 +40,19 @@ FS_STATUS fs_close() {
 
 
 FS_STATUS fs_write(uint8_t *data, uint16_t len) {
-    return FS_OK;
+    if (len + buffer_index > PAGE_BUFFER_SIZE) {
+        uint16_t empty = PAGE_BUFFER_SIZE - buffer_index;
+        memcpy(PAGE_BUFFER + buffer_index, data, empty);
+    } else {
+        memcpy(PAGE_BUFFER + buffer_index, data, len);
+    }
 
+    return FS_OK;
 }
 
 
 FS_STATUS fs_dump_files(FILE *descriptor) {
+
 
     return FS_OK;
 }

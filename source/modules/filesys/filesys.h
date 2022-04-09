@@ -50,12 +50,6 @@ FS_STATUS fs_dump_files(FILE *descriptor);
 void fs_toggle_overwrite();
 
 /**
- * Wipes flight data
- * @return FS_STATUS
- */
-FS_STATUS fs_wipe();
-
-/**
  * Initialize the file system.
  * @return FS_STATUS
  */
