@@ -10,10 +10,13 @@ static int PAGE_BUFFER_SIZE = 512;
 
 
 FS_STATUS fs_new() {
-    current_file = fopen("log.csv", "w");
-
     if (current_file != NULL && !WRITEABLE) {
         return FS_UNWRITABLE;
+    } else if (current_file == NULL){
+        current_file = fopen("log.csv", "w");
+    } else if (WRITEABLE) {
+        fclose(current_file);
+        current_file = fopen("log.csv", "w");
     }
 
     return FS_OK;
@@ -27,6 +30,7 @@ FS_STATUS fs_close() {
     if (current_file == NULL) {
         return FS_UNOPENED;
     }
+
     fclose(current_file);
     current_file = NULL;
 
@@ -35,12 +39,8 @@ FS_STATUS fs_close() {
 
 
 FS_STATUS fs_write(uint8_t *data, uint16_t len) {
-    if (current_file == NULL) {
-        return FS_UNOPENED;
-    }
-
-    fwrite(data, 1, len, current_file);
     return FS_OK;
+
 }
 
 
@@ -64,13 +64,6 @@ void fs_toggle_overwrite() {
             break;
     }
 }
-
-
-FS_STATUS fs_wipe() {
-
-    return FS_OK;
-}
-
 
 FS_STATUS fs_init(int can_write, int user_specified_buffer_size) {
     WRITEABLE = can_write;
