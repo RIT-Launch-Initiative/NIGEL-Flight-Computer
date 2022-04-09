@@ -3,28 +3,25 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define FILENAME_SIZE 11 // logXXX.csv
-
-static int writeable = 0;
+static int WRITEABLE = 0;
 static FILE *current_file = NULL;
-static int file_index = 0;
+static char *PAGE_BUFFER = NULL;
+static int PAGE_BUFFER_SIZE = 512;
+
 
 FS_STATUS fs_new() {
-    char filename[FILENAME_SIZE];
-    sprintf(filename, "log%03d.csv", file_index);
+    current_file = fopen("log.csv", "w");
 
-    if (current_file != NULL && !writeable) {
+    if (current_file != NULL && !WRITEABLE) {
         return FS_UNWRITABLE;
     }
-
-    current_file = fopen(filename, "w");
 
     return FS_OK;
 }
 
 /**
  * Close the opened file
- * @return
+ * @return FS_STATUS
  */
 FS_STATUS fs_close() {
     if (current_file == NULL) {
@@ -54,12 +51,16 @@ FS_STATUS fs_dump_files(FILE *descriptor) {
 
 
 void fs_toggle_overwrite() {
-    switch (writeable) {
+    switch (WRITEABLE) {
         case 0:
-            writeable = 1;
+            WRITEABLE = 1;
             break;
         case 1:
-            writeable = 0;
+            WRITEABLE = 0;
+            break;
+
+        default:
+            WRITEABLE = 0;
             break;
     }
 }
@@ -71,9 +72,10 @@ FS_STATUS fs_wipe() {
 }
 
 
-FS_STATUS fs_init(int can_write) {
-    writeable = can_write;
+FS_STATUS fs_init(int can_write, int user_specified_buffer_size) {
+    WRITEABLE = can_write;
     fs_toggle_overwrite();
+    PAGE_BUFFER_SIZE = user_specified_buffer_size;
 
     return FS_OK;
 }

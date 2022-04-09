@@ -75,7 +75,8 @@ source/modules/xbee/xbee.c \
 source/modules/ms5611/ms5611.c \
 source/modules/max7c0/ublox7rx.c \
 source/comm.c \
-source/idle.c
+source/idle.c \
+source/modules/filesys/filesys.c
 
 # CPP sources
 CPP_SOURCES = \
@@ -158,7 +159,7 @@ C_INCLUDES =  \
 -Isource/modules/xbee \
 -Isource/modules/net \
 -Isource/modules/max7c0 \
--Isource/modules/filesys
+-Isource/modules/filesys \
 
 
 # compile gcc flags
