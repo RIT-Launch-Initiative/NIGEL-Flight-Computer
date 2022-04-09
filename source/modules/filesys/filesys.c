@@ -7,7 +7,7 @@ static int WRITEABLE = 0;
 static FILE *current_file = NULL;
 static char *PAGE_BUFFER = NULL;
 static int PAGE_BUFFER_SIZE = 512;
-static int8_t buffer_index = 0;
+static int8_t BUFFER_INDEX = 0;
 
 
 FS_STATUS fs_new() {
@@ -15,9 +15,10 @@ FS_STATUS fs_new() {
         return FS_UNWRITABLE;
     } else if (current_file == NULL){
         current_file = fopen("log.csv", "w");
-    } else if (WRITEABLE) {
+    } else if (WRITEABLE != 0) {
         fclose(current_file);
         current_file = fopen("log.csv", "w");
+        BUFFER_INDEX = 0;
     }
 
     return FS_OK;
@@ -40,12 +41,14 @@ FS_STATUS fs_close() {
 
 
 FS_STATUS fs_write(uint8_t *data, uint16_t len) {
-    if (len + buffer_index > PAGE_BUFFER_SIZE) {
-        uint16_t empty = PAGE_BUFFER_SIZE - buffer_index;
-        memcpy(PAGE_BUFFER + buffer_index, data, empty);
+    if (len + BUFFER_INDEX > PAGE_BUFFER_SIZE) {
+        uint16_t empty = PAGE_BUFFER_SIZE - BUFFER_INDEX;
+        memcpy(PAGE_BUFFER + BUFFER_INDEX, data, empty);
     } else {
-        memcpy(PAGE_BUFFER + buffer_index, data, len);
+        memcpy(PAGE_BUFFER + BUFFER_INDEX, data, len);
     }
+
+    BUFFER_INDEX += len;
 
     return FS_OK;
 }
