@@ -22,7 +22,8 @@ typedef struct {
 #define NUM_GCMDS 1
 static gcmd_entry_t gcmd_list[NUM_GCMDS] =
 {
-    {900, NULL} // TODO link these
+    {900, NULL}, // TODO link these
+    {99, &fts_set_state}
 };
 
 #endif
