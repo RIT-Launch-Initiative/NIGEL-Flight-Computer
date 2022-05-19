@@ -18,6 +18,8 @@ static int xb_fd;
 static tiny_task_t task;
 static int ttid;
 
+static xb_rx_request req;
+
 // function that XBee layer calls to write data out the UART
 static int xbee_write(uint8_t* buff, size_t len) {
     return sio_write(xb_fd, (char*)buff, len);
@@ -39,16 +41,23 @@ static void comm_task(tiny_task_t* t) {
     // we shouldn't need to copy 3 times
     // we copy from HAL -> sio -> here -> Xbee (no copy to gcmd)
     // investigate a way to copy from HAL into a single buffer than everyone can work off of (tricky to get around the ring buffer)
+    // UPDATE: removed the copy from here to xbee (now we just copy from HAL and then from sio)
 
     // read all available data from the sio layer
-    int len = sio_read(xb_fd, (char*)buffer, sio_available(xb_fd));
-    if(len == -1) {
-        // read fail
-        return;
+    // NOTE: we can queue more since req has a requested length field
+    while(sio_available(xb_fd)) {
+        int len = sio_read(xb_fd, (char*)(req.buff), req.len);
+        if(len == -1) {
+            // read fail
+            return;
+        }
+
+        // send the data up to the xbee layer
+        xb_rx_complete(&req);
     }
 
-    // send the data up to the xbee layer
-    xb_raw_recv(buffer, len);
+    // sleep ourselves until the next serial read
+    t->priority = SLEEP_PRIORITY;
 }
 
 int comm_init() {
@@ -87,6 +96,11 @@ int comm_init() {
 
     // packets are sent up from xbee to gcmd
     xb_attach_rx_callback(&gcmd_parse);
+
+    // kick off XBee reading
+    // NOTE: must be before we initialize the sio callback!
+    // since req is uninitialized until after this call
+    xb_rx_complete(&req);
 
     // data is sent from sio to xbee
     sio_attach_callback(xb_fd, xbee_cb);
