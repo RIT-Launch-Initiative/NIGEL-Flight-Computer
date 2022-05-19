@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <string.h>
 #include "net.h"
 #include "spinlock.h"
 #include "xbee.h"
@@ -70,8 +71,29 @@ int main() {
     }
 
     check = 0xFF - check;
+    printf("%02x\n", check);
     TEST_RX_PACKET[sizeof(TEST_RX_PACKET) - 1] = check;
 
+
+    printf("reading frame\n");
+
+    // kick off the reading
+    xb_rx_request req;
+    xb_rx_complete(&req);
+
+    size_t read = 0;
+    while(read < sizeof(TEST_RX_PACKET)) {
+        // "read" what the XBee requested
+        memcpy(req.buff, TEST_RX_PACKET + read, req.len);
+        read += req.len;
+
+        // tell the XBee we read it's data
+        xb_rx_complete(&req);
+    } // we breakout when the XBee has requested to read all of our data
+
+    printf("frame reading complete\n\n");
+
+    /*
     // test with one chunk
     printf("should print once\n");
     xb_raw_recv(TEST_RX_PACKET, sizeof(TEST_RX_PACKET));
@@ -94,6 +116,8 @@ int main() {
     TEST_RX_PACKET[10] = 0x91;
     // shouldn't print
     xb_raw_recv(TEST_RX_PACKET, sizeof(TEST_RX_PACKET));
+    */
+
 
     // try sending a sample packet
     uint8_t payload[4] = {0x69, 0x69, 0x69, 0x69};

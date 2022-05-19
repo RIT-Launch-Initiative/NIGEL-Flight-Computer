@@ -31,4 +31,3 @@ stmdev_ctx_t init_highg(void* handle)
 	};
 	return ctx;
 }
-
