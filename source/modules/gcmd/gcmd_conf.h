@@ -14,12 +14,14 @@ typedef struct {
 // INSERT INCLUDES FOR MAPPED FUNCTIONS HERE
 // -----------------------------------------
 
+#include "fts.h"
+
 // -----------------------------------------
 
 
 // MAP FUNCTIONS TO CONTROL NUMBERS
 
-#define NUM_GCMDS 1
+#define NUM_GCMDS 2
 static gcmd_entry_t gcmd_list[NUM_GCMDS] =
 {
     {900, NULL}, // TODO link these
