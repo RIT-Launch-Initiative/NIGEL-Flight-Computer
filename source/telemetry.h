@@ -7,6 +7,11 @@
 #define TELEMETRY_H
 
 #include <stdint.h>
+#include <stdlib.h>
+
+// telemetry stream IDs
+#define FTS_STREAM 0
+#define FTS_RATE RATE_20HZ
 
 // initializes telemetry bufferer tasks
 // returns -1 on failure, 1 otherwise

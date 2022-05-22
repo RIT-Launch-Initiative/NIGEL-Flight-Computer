@@ -9,6 +9,7 @@ extern "C" {
     #include "comm.h"
     #include "idle.h"
     #include "telemetry.h"
+    #include "fts.h"
 }
 
 // init function signature
@@ -23,6 +24,7 @@ init_handler_t init_functions[] =
     idle_init,
     comm_init,
     tlm_init,
+    fts_init,
     NULL
 };
 

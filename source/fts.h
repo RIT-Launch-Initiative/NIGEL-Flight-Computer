@@ -8,6 +8,10 @@
 
 #include <stdint.h>
 
+// UDP ports
+#define FTS_SRC_PORT 8000
+#define FTS_DST_PORT 8000
+
 // state constants
 #define FTS_DISARMED 0  // disarmed, ignore terminate commands
 #define FTS_ARMED    1  // armed, ready for terminate command
@@ -26,5 +30,8 @@ void fts_disarm();
 // terminate the vehicle
 // NOTE: ignores termination command if not armed
 void fts_termn();
+
+// init function
+int fts_init();
 
 #endif

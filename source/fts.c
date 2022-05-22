@@ -4,9 +4,26 @@
 *   Will Merges @ RIT Launch Initiative
 */
 #include "fts.h"
+#include "telemetry.h"
+#include "udp.h"
+#include "net.h"
 #include <stdint.h>
 
-static uint8_t armed = 0;
+typedef struct {
+    udp_header_t udp;
+    uint16_t state;
+} __attribute__((packed)) fts_packet_t;
+
+static fts_packet_t state;
+tlm_msg_t fts_msg;
+
+void fts_send_tlm() {
+    state.udp.checksum = 0;
+    state.udp.checksum = udp_calculate_checksum((uint8_t*)&state, sizeof(state));
+
+    // TODO error checking?
+    tlm_buffer(&fts_msg);
+}
 
 void fts_set_state(uint16_t state, void* unused_src_addr) {
     switch(state) {
@@ -20,20 +37,36 @@ void fts_set_state(uint16_t state, void* unused_src_addr) {
             fts_termn();
             break;
     }
+
+    fts_send_tlm();
 }
 
 void fts_arm() {
-    armed = 1;
+    state.state = FTS_ARMED;
 }
 
 void fts_disarm() {
-    armed = 0;
+    state.state = FTS_DISARMED;
 }
 
 void fts_termn() {
-    if(!armed) {
-        return;
-    }
+    if(state.state == FTS_ARMED) {
+        // TODO boom
 
-    // TODO boom
+        state.state = FTS_TERMN;
+    }
+}
+
+int fts_init() {
+    state.state = FTS_DISARMED;
+
+    state.udp.src_port = ntoh16(FTS_DST_PORT);
+    state.udp.dst_port = ntoh16(FTS_SRC_PORT);
+    state.udp.len = sizeof(state) - sizeof(udp_header_t);
+
+    fts_msg.buff = (uint8_t*)&state;
+    fts_msg.len = sizeof(state);
+    fts_msg.stream_id = FTS_STREAM;
+
+    return 0;
 }
