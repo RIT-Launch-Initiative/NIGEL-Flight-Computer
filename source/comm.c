@@ -13,6 +13,8 @@
 #include "spinlock.h"
 #include "ts.h"
 #include "sio.h"
+#include "telemetry.h"
+#include "udp.h"
 
 static int xb_fd;
 static tiny_task_t task;
@@ -57,6 +59,29 @@ static void comm_task(tiny_task_t* t) {
 
     // sleep ourselves until the next serial read
     t->priority = SLEEP_PRIORITY;
+}
+
+typedef struct {
+    udp_header_t udp;
+    uint32_t uptime;
+    uint32_t heartbeat_count;
+} __attribute__((packed)) heartbeat_packet_t;
+
+heartbeat_packet_t hb;
+tlm_msg_t hb_msg;
+
+// save the source address as the default destination address for telemetyr packets
+// also sends a telemetry message back just containing the uptime and heartbeat count
+void comm_heartbeat(uint16_t unused, void* addr_info) {
+    uint64_t src_addr = (uint64_t)addr_info;
+    xb_set_default_dst(src_addr);
+
+    hb.uptime = ts_systime();
+    hb.heartbeat_count++;
+    hb.udp.checksum = 0;
+    hb.udp.checksum = udp_calculate_checksum((uint8_t*)&hb, sizeof(hb));
+
+    tlm_buffer(&hb_msg);
 }
 
 int comm_init() {
@@ -105,6 +130,14 @@ int comm_init() {
     sio_attach_callback(xb_fd, xbee_cb);
 
     // xbee can already send data down to sio
+
+    // set up heartbeat telemetry message
+    hb_msg.buff = (uint8_t*)&hb;
+    hb_msg.len = sizeof(hb);
+    hb_msg.stream_id = HEARTBEAT_STREAM;
+    hb_msg.rate = HEARTBEAT_RATE;
+
+    hb.heartbeat_count = 0;
 
     return 1;
 }

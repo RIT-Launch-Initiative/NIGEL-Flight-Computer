@@ -15,6 +15,7 @@ typedef struct {
 // -----------------------------------------
 
 #include "fts.h"
+#include "comm.h"
 
 // -----------------------------------------
 
@@ -24,8 +25,8 @@ typedef struct {
 #define NUM_GCMDS 2
 static gcmd_entry_t gcmd_list[NUM_GCMDS] =
 {
-    {900, NULL}, // TODO link these
-    {99, &fts_set_state}
+    {99, &fts_set_state},
+    {0, &comm_heartbeat}
 };
 
 #endif

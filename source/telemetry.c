@@ -1,6 +1,8 @@
 /*
 *   Telemetry bufferer
 *
+*   Downsamples buffered telemetry by stream ID
+*
 *   Will Merges @ RIT Launch Initiative
 */
 #include <stdlib.h>
@@ -36,14 +38,14 @@ static void tlm_task(tiny_task_t* task) {
     struct task_info* info = task->user_data;
     tlm_msg_t* msg;
 
+    task->start_time = ts_systime() + info->period;
+    
     // dump the buffer
     while(!QUEUE_EMPTY(info->q)) {
         msg = q_dequeue(info->q); // this should never be NULL (since queue is not empty!)
         sio_write(xb_fd, (char*)msg->buff, msg->len);
         hm_rm(info->hm, msg->stream_id);
     }
-
-    task->start_time = ts_systime() + info->period;
 }
 
 int tlm_buffer(tlm_msg_t* msg) {

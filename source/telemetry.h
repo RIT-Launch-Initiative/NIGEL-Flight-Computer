@@ -13,6 +13,9 @@
 #define FTS_STREAM 0
 #define FTS_RATE RATE_20HZ
 
+#define HEARTBEAT_STREAM 1
+#define HEARTBEAT_RATE RATE_20HZ
+
 // initializes telemetry bufferer tasks
 // returns -1 on failure, 1 otherwise
 int tlm_init();
