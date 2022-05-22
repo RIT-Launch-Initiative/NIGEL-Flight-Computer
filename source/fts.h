@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 // UDP ports
+// tacked onto telemetry messages
 #define FTS_SRC_PORT 8000
 #define FTS_DST_PORT 8000
 
