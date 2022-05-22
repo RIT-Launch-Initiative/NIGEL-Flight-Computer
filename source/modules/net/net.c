@@ -1,10 +1,37 @@
 /*
 *   Generic network functions
-*   ntoh and hton functions assume system is little endian order (true for ARM)
 */
 #include "net.h"
 #include <stdlib.h>
 
+#if defined(__BYTE_ORDER__)&&(__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+// big endian to big endian
+
+uint16_t hton16(uint16_t n) {
+    return n;
+}
+
+uint16_t hton32(uint32_t n) {
+    return n;
+}
+
+uint16_t hton16(uint64_t n) {
+    return n;
+}
+
+uint16_t ntoh16(uint16_t n) {
+    return n;
+}
+
+uint16_t ntoh32(uint32_t n) {
+    return n;
+}
+
+uint16_t ntoh16(uint64_t n) {
+    return n;
+}
+
+#else
 // little endian to big endian
 
 uint16_t hton16(uint16_t n) {
@@ -53,3 +80,4 @@ uint32_t ntoh32(uint32_t n) {
 uint64_t ntoh64(uint64_t n) {
     return hton64(n);
 }
+#endif
