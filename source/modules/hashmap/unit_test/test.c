@@ -3,7 +3,7 @@
 #include "../hashmap.h"
 
 int main() {
-    hashmap_t* hm = hm_create(1000);
+    hashmap_t* hm = hm_create(100, 10);
 
     char* data1 = "test1";
     char* data2 = "test2";

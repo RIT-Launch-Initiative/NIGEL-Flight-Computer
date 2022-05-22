@@ -12,7 +12,8 @@
 typedef struct {} hashmap_t;
 #endif
 
-#define HASHMAP_DEFAULT_SIZE 1000
+#define HASHMAP_DEFAULT_SIZE         100
+#define HASHMAP_DEFAULT_BUCKET_SIZE  10
 
 typedef enum {
     HM_OK,
@@ -23,7 +24,7 @@ typedef enum {
 
 // create a new hashmap
 // returns NULL on error
-hashmap_t* hm_create(uint32_t num_entries);
+hashmap_t* hm_create(uint32_t num_entries, uint32_t bucket_size);
 
 // destroy a hashmap
 void hm_destroy(hashmap_t* hm);

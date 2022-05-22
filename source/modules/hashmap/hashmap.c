@@ -8,6 +8,7 @@ typedef struct {
 
 typedef struct {
     uint32_t size;            // number of entries
+    uint32_t bucket_size;     // number of entries per key
     hashmap_entry_t* entries; // array of entries
     uint8_t* used ;           // if entry is used or free
 } hashmap_t;
@@ -16,11 +17,12 @@ typedef struct {
 #include "hashmap.h"
 
 
-hashmap_t* hm_create(uint32_t num_entries) {
+hashmap_t* hm_create(uint32_t num_entries, uint32_t bucket_size) {
     hashmap_t* hm = (hashmap_t*)malloc(sizeof(hashmap_t));
     hm->size = num_entries;
-    hm->entries = (hashmap_entry_t*)calloc(num_entries, sizeof(hashmap_entry_t));
-    hm->used = (uint8_t*)calloc(num_entries, sizeof(uint8_t));
+    hm->bucket_size = bucket_size;
+    hm->entries = (hashmap_entry_t*)calloc(num_entries * bucket_size, sizeof(hashmap_entry_t));
+    hm->used = (uint8_t*)calloc(num_entries * bucket_size, sizeof(uint8_t));
 
     return hm;
 }
@@ -35,10 +37,10 @@ void hm_destroy(hashmap_t* hm) {
 // NOTE: the way we add we don't look for collisions with other keys
 // the first key added will be returned by get until it is removed
 hashmap_ret_t hm_add(hashmap_t* hm, uint32_t key, void* value) {
-    uint32_t index = key % hm->size;
+    uint32_t index = (key % hm->size) * hm->bucket_size;
 
     // find a location closest to index and to the right
-    for(uint32_t i = index; i < hm->size; i++) {
+    for(uint32_t i = index; i < index + hm->bucket_size; i++) {
         if(!hm->used[i]) {
             // this is our location!
             hm->entries[i].key = key;
@@ -53,10 +55,10 @@ hashmap_ret_t hm_add(hashmap_t* hm, uint32_t key, void* value) {
 }
 
 hashmap_ret_t hm_rm(hashmap_t* hm, uint32_t key) {
-    uint32_t index = key % hm->size;
+    uint32_t index = (key % hm->size) * hm->bucket_size;
 
     // find the key starting from it's leftmost possible location
-    for(uint32_t i = index; i < hm->size; i++) {
+    for(uint32_t i = index; i < index + hm->bucket_size; i++) {
         if(hm->used[i]) {
             if(hm->entries[i].key == key) {
                 // this is it!
@@ -72,10 +74,10 @@ hashmap_ret_t hm_rm(hashmap_t* hm, uint32_t key) {
 }
 
 void* hm_get(hashmap_t* hm, uint32_t key) {
-    uint32_t index = key % hm->size;
+    uint32_t index = (key % hm->size) * hm->bucket_size;
 
     // find the key starting from it's leftmost possible location
-    for(uint32_t i = index; i < hm->size; i++) {
+    for(uint32_t i = index; i < index + hm->bucket_size; i++) {
         if(hm->used[i]) {
             if(hm->entries[i].key == key) {
                 // this is it!

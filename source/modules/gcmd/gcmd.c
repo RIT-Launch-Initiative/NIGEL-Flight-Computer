@@ -9,7 +9,7 @@ static uint32_t seq_num = 0;
 static hashmap_t* hm;
 
 int gcmd_init() {
-    hm = hm_create(100); // TODO make this number less random?
+    hm = hm_create(100, 10); // TODO make this number less random?
 
     if(!hm) {
         // can't allocate memory

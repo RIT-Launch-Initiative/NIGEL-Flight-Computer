@@ -49,13 +49,13 @@ static void tlm_task(tiny_task_t* task) {
 int tlm_buffer(tlm_msg_t* msg) {
     struct task_info* info = &tasks[msg->rate];
 
-    if(NULL != hm_get(info->hm, msg->stream_id)) {
-        // a message is already buffered with this stream id
-        return -1;
+    if((void*)(1) == hm_get(info->hm, msg->stream_id)) {
+        // we already have an old entry here, replace it
+        hm_rm(info->hm, msg->stream_id);
     }
 
     // don't need to add a value to the map since we're using it like a set
-    hm_add(info->hm, msg->stream_id, NULL);
+    hm_add(info->hm, msg->stream_id, (void*)1);
 
     return q_enqueue(info->q, (void*)msg);
 }
@@ -72,6 +72,7 @@ int tlm_init() {
 
         info.task.default_priority = MEDIUM_PRIORITY; // TODO higher? lower?
         info.task.task = &tlm_task;
+        info.task.user_data = &info;
 
         if(TS_ERR_TTID == ts_add(&(info.task))) {
             return -1;
@@ -84,7 +85,7 @@ int tlm_init() {
         }
 
         // TODO change size?
-        info.hm = hm_create(HASHMAP_DEFAULT_SIZE);
+        info.hm = hm_create(HASHMAP_DEFAULT_SIZE, HASHMAP_DEFAULT_BUCKET_SIZE);
 
         if(NULL == info.hm) {
             return -1;
