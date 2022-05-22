@@ -15,7 +15,7 @@
 
 // set state of the FTS system
 // NOTE: this function is primarily used as a layer to parse ground commands
-void fts_set_state(uint16_t state);
+void fts_set_state(uint16_t state, void*);
 
 // arm the FTS
 void fts_arm();

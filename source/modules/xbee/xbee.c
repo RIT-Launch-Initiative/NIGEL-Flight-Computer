@@ -36,6 +36,7 @@ typedef struct {
     uint8_t frame_type;
     uint64_t src_addr;
     uint16_t reserved;
+    uint8_t options;
 } __attribute__((packed)) xb_rx_frame_t;
 
 typedef struct {
@@ -59,7 +60,7 @@ int (*xb_write)(uint8_t* buf, size_t len);
 void (*xb_delay)(uint32_t ms);
 
 static uint64_t default_dst = 0xFFFF000000000000; // broadcast address in network order
-static void (*rx_callback)(uint8_t* buff, size_t len);
+static void (*rx_callback)(uint8_t* buff, size_t len, uint64_t src_addr);
 
 static uint8_t tx_buff[TX_BUFF_SIZE];
 
@@ -99,12 +100,13 @@ xb_ret_t xb_sendto(uint64_t addr, uint8_t* data, size_t len) {
     return XB_OK;
 }
 
-void xb_attach_rx_callback(void (*rx)(uint8_t* buff, size_t len)) {
+void xb_attach_rx_callback(void (*rx)(uint8_t* buff, size_t len, uint64_t src_addr)) {
     rx_callback = rx;
 }
 
 #define RX_BUFF_SIZE 2048 // bytes
 static uint8_t rx_buff[RX_BUFF_SIZE];
+static xb_rx_frame_t* rx_frame;
 
 void xb_rx_complete(xb_rx_request* req) {
     typedef enum {
@@ -179,8 +181,11 @@ void xb_rx_complete(xb_rx_request* req) {
                         // pick a callback based on the frame type
                         switch(rx_buff[0]) {
                             case RX_FRAME_TYPE:
+                                rx_frame = (xb_rx_frame_t*)rx_buff;
                                 if(rx_callback) {
-                                    rx_callback(rx_buff + 12, payload_size - 12);
+                                    rx_callback((uint8_t*)(rx_frame + 1),
+                                        payload_size - sizeof(xb_rx_frame_t) - sizeof(xb_header_t),
+                                        ntoh64(rx_frame->src_addr));
                                 }
                                 break;
                             default:
@@ -250,7 +255,7 @@ static xb_ret_t xb_remote_at_cmd(const char cmd[2], uint8_t* param, size_t param
 
     tx_buff[i] = 0xFF - check;
 
-    if(xb_write(tx_buff, i + 1) < int(i + 1)) {
+    if(xb_write(tx_buff, i + 1) < ((int)(i + 1))) {
         // write error
         return XB_ERR;
     }
@@ -279,7 +284,7 @@ xb_ret_t xb_at_cmd(const char cmd[2], uint8_t* param, size_t param_size) {
 
     tx_buff[i] = 0xFF - check;
 
-    if(xb_write(tx_buff, i + 1) < int(i + 1)) {
+    if(xb_write(tx_buff, i + 1) < ((int)(i + 1))) {
         // write error
         return XB_ERR;
     }

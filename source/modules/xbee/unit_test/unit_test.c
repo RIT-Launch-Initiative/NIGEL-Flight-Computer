@@ -17,8 +17,8 @@
 #define TEST_LENGTH_B2            0x10 // 16
 
 
-void rx_print_data(uint8_t *data, size_t length) {
-    printf("Received data: ");
+void rx_print_data(uint8_t *data, size_t length, uint64_t src_addr) {
+    printf("Received data from address: %lx\n", src_addr);
     for(size_t i = 0; i < length; i++) {
         printf("0x%02X ", data[i]);
     }

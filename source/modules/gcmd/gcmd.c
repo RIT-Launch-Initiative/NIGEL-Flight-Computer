@@ -28,7 +28,7 @@ int gcmd_init() {
     return 1;
 }
 
-void gcmd_parse(uint8_t* buff, size_t len) {
+void gcmd_parse(uint8_t* buff, size_t len, void* addr_info) {
     if(len != sizeof(gcmd_t)) {
         return;
     }
@@ -50,6 +50,6 @@ void gcmd_parse(uint8_t* buff, size_t len) {
 
     seq_num++;
 
-    void (*func)(uint16_t) = (void (*)(uint16_t))f;
-    func(cmd->state);
+    void (*func)(uint16_t, void*) = (void (*)(uint16_t, void*))f;
+    func(cmd->state, addr_info);
 }

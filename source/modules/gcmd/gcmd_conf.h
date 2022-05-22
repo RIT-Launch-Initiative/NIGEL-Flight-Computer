@@ -8,7 +8,7 @@
 
 typedef struct {
     uint16_t control;
-    void (*func) (uint16_t state);
+    void (*func) (uint16_t state, void* addr_info);
 } gcmd_entry_t;
 
 // INSERT INCLUDES FOR MAPPED FUNCTIONS HERE

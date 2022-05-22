@@ -20,7 +20,8 @@ typedef struct {
 int gcmd_init();
 
 // parse a command from an input source
+// addr_info is arbitrary information about the underlying layers
 // return -1 on failure, 1 otherwise
-void gcmd_parse(uint8_t* buff, size_t len);
+void gcmd_parse(uint8_t* buff, size_t len, void* addr_info);
 
 #endif

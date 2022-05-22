@@ -95,7 +95,7 @@ int comm_init() {
     }
 
     // packets are sent up from xbee to gcmd
-    xb_attach_rx_callback(&gcmd_parse);
+    xb_attach_rx_callback((void (*)(uint8_t*, size_t, uint64_t))(&gcmd_parse));
 
     // kick off XBee reading
     // NOTE: must be before we initialize the sio callback!
