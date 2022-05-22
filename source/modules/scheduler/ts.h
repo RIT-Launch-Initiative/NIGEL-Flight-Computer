@@ -34,6 +34,7 @@ struct tiny_task {
     priority_t default_priority; // priority level, set by user
     priority_t priority;
     void (*task) (tiny_task_t*); // task function, defined by programmer
+    void* user_data; // extra data the user can define
 };
 
 // add a task to the scheduler

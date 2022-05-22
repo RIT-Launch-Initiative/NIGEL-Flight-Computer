@@ -16,7 +16,6 @@
 
 static int xb_fd;
 static tiny_task_t task;
-static int ttid;
 
 static xb_rx_request req;
 
@@ -65,7 +64,7 @@ int comm_init() {
     task.default_priority = SLEEP_PRIORITY;
     task.task = &comm_task;
 
-    ttid = ts_add(&task);
+    int ttid = ts_add(&task);
 
     if(ttid == TS_ERR_TTID) {
         // failed to put on scheduler

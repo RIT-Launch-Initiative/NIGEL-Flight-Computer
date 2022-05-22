@@ -76,7 +76,8 @@ source/modules/ms5611/ms5611.c \
 source/modules/max7c0/ublox7rx.c \
 source/comm.c \
 source/idle.c \
-source/fts.c
+source/fts.c \
+source/telemetry.c
 
 # CPP sources
 CPP_SOURCES = \

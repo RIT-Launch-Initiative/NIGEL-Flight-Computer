@@ -8,7 +8,7 @@
 #define COMM_H
 
 // initialize the communication stack
-// return -1 on failure, 1 otherwise
+// returns -1 on failure, 1 otherwise
 int comm_init();
 
 #endif

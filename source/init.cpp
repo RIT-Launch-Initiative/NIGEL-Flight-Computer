@@ -8,6 +8,7 @@ extern "C" {
     #include "gcmd.h"
     #include "comm.h"
     #include "idle.h"
+    #include "telemetry.h"
 }
 
 // init function signature
@@ -19,8 +20,9 @@ typedef int (*init_handler_t)();
 // whatever initializes printf output MUST be at index 0
 init_handler_t init_functions[] =
 {
-    comm_init,
     idle_init,
+    comm_init,
+    tlm_init,
     NULL
 };
 
