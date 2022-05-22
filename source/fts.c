@@ -7,10 +7,12 @@
 #include "telemetry.h"
 #include "udp.h"
 #include "net.h"
+#include "ts.h"
 #include <stdint.h>
 
 typedef struct {
     udp_header_t udp;
+    long int uptime; // ms
     uint16_t state;
 } __attribute__((packed)) fts_packet_t;
 
@@ -18,6 +20,7 @@ static fts_packet_t state;
 tlm_msg_t fts_msg;
 
 void fts_send_tlm() {
+    state.uptime = ts_systime();
     state.udp.checksum = 0;
     state.udp.checksum = udp_calculate_checksum((uint8_t*)&state, sizeof(state));
 
