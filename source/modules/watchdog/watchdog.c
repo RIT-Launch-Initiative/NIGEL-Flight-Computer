@@ -50,7 +50,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
     // find which timer went off
     size_t i;
     for(i = 0; i < NUM_WATCHDOGS; i++) {
-        if(wd_timers[i] == htim) {
+        if(wd_timers[i] == htim) { // TODO hash table?
             break;
         }
     }
