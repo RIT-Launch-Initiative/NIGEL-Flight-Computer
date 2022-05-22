@@ -106,7 +106,6 @@ void xb_attach_rx_callback(void (*rx)(uint8_t* buff, size_t len, uint64_t src_ad
 
 #define RX_BUFF_SIZE 2048 // bytes
 static uint8_t rx_buff[RX_BUFF_SIZE];
-static xb_rx_frame_t* rx_frame;
 
 void xb_rx_complete(xb_rx_request* req) {
     typedef enum {
