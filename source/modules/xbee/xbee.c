@@ -181,11 +181,11 @@ void xb_rx_complete(xb_rx_request* req) {
                         // pick a callback based on the frame type
                         switch(rx_buff[0]) {
                             case RX_FRAME_TYPE:
-                                rx_frame = (xb_rx_frame_t*)rx_buff;
+                                // printf("payload size: %li\n", payload_size - sizeof(xb_rx_frame_t) - sizeof(xb_header_t));
                                 if(rx_callback) {
-                                    rx_callback((uint8_t*)(rx_frame + 1),
-                                        payload_size - sizeof(xb_rx_frame_t) - sizeof(xb_header_t),
-                                        ntoh64(rx_frame->src_addr));
+                                    rx_callback(rx_buff + sizeof(xb_rx_frame_t) - sizeof(xb_header_t),
+                                        payload_size - (sizeof(xb_rx_frame_t) - sizeof(xb_header_t)),
+                                        ntoh64(*((uint64_t*)(rx_buff + 1))));
                                 }
                                 break;
                             default:

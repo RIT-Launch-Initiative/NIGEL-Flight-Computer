@@ -71,9 +71,7 @@ int main() {
     }
 
     check = 0xFF - check;
-    printf("%02x\n", check);
     TEST_RX_PACKET[sizeof(TEST_RX_PACKET) - 1] = check;
-
 
     printf("reading frame\n");
 
