@@ -77,6 +77,7 @@ int main() {
 
     // kick off the reading
     xb_rx_request req;
+    req.len = 0;
     xb_rx_complete(&req);
 
     size_t read = 0;
