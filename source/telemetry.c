@@ -37,14 +37,16 @@ struct task_info tasks[NUM_TELEMETRY_RATES];
 static void tlm_task(tiny_task_t* task) {
     struct task_info* info = task->user_data;
     tlm_msg_t* msg;
+    uint32_t stream_id;
 
     task->start_time = ts_systime() + info->period;
-    
+
     // dump the buffer
     while(!QUEUE_EMPTY(info->q)) {
-        msg = q_dequeue(info->q); // this should never be NULL (since queue is not empty!)
+        stream_id = (uint32_t)q_dequeue(info->q); // this should never be NULL (since queue is not empty!)
+        msg = (tlm_msg_t*)hm_get(info->hm, stream_id);
+        hm_rm(info->hm, stream_id);
         sio_write(xb_fd, (char*)msg->buff, msg->len);
-        hm_rm(info->hm, msg->stream_id);
     }
 }
 
@@ -57,9 +59,9 @@ int tlm_buffer(tlm_msg_t* msg) {
     }
 
     // don't need to add a value to the map since we're using it like a set
-    hm_add(info->hm, msg->stream_id, (void*)1);
+    hm_add(info->hm, msg->stream_id, (void*)msg);
 
-    return q_enqueue(info->q, (void*)msg);
+    return q_enqueue(info->q, (void*)(msg->stream_id));
 }
 
 int tlm_init() {
