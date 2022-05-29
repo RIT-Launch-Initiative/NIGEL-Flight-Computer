@@ -8,7 +8,7 @@
 #define NIGEL_FLIGHT_COMPUTER_FS_H
 
 /**
- * Initialize the filesystem
+ * Initialize the fs
  * @return status code
  */
 int fs_init();

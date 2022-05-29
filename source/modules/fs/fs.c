@@ -1,7 +1,7 @@
 #include "fs.h"
 
 /**
- * Initialize the filesystem
+ * Initialize the fs
  * @return status code
  */
 int fs_init() {

@@ -74,6 +74,7 @@ source/modules/spinlock/spinlock.c \
 source/modules/xbee/xbee.c \
 source/modules/ms5611/ms5611.c \
 source/modules/max7c0/ublox7rx.c \
+source/modules/fs/fs.c \
 source/comm.c \
 source/idle.c \
 source/fts.c \
@@ -159,7 +160,9 @@ C_INCLUDES =  \
 -Isource/modules/spinlock \
 -Isource/modules/xbee \
 -Isource/modules/net \
--Isource/modules/max7c0
+-Isource/modules/max7c0 \
+-Isource/modules/fs \
+
 
 
 # compile gcc flags
