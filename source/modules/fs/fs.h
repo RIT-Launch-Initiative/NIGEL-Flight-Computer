@@ -19,7 +19,12 @@ int fs_init();
  */
 int fs_write();
 
-int fs_read();
+/**
+ * Reads data out from specific flight
+ *
+ * @return
+ */
+int fs_read(int flight_num);
 
 
 /**
