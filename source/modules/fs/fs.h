@@ -19,6 +19,9 @@ int fs_init();
  */
 int fs_write();
 
+int fs_read();
+
+
 /**
  * Writes buffer into a file
  * @return status code
