@@ -5,7 +5,6 @@
 #define FILE_LIMIT 5 // TODO: Change this :)
 #define INDEX_PAGE 0
 
-
 static char *flights;
 static int num_flights = 0;
 static int num_pages = 0;
@@ -30,6 +29,10 @@ int fs_init(int (*read_fun) (uint8_t* buff, size_t len), int (*write_fun) (uint8
 }
 
 int fs_read(int flight_num) {
+    if (flight_num > num_flights) {
+        return 1;
+    }
+
     char *start_flight = flights + (num_flights - 1);
     char *end_flight = flights + num_flights;
     int len_flight = end_flight - start_flight;
@@ -78,9 +81,18 @@ int fs_dump() {
 }
 
 /**
- * Closes file
+ * Cleanup
  * @return status code
  */
 int fs_close() {
+    if (buffer_index > 0) {
+        fs_dump();
+    }
+
+
+    num_flights++;
+
+
+
     return 0;
 }

@@ -36,7 +36,7 @@ int fs_read(int flight_num);
 int fs_dump();
 
 /**
- * Closes file
+ * Cleanup
  * @return status code
  */
 int fs_close();
