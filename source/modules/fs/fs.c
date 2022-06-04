@@ -10,7 +10,8 @@ static char *flights;
 static int num_flights = 0;
 static int num_pages = 0;
 static char *buffer;
-static int current_flight_len = 0;
+static int buffer_index = 0;
+static int current_flight_len = -1;
 
 static int (*read_out) (uint8_t* buff, size_t len);
 static int (*write_out) (uint8_t* buff, size_t len);
@@ -22,6 +23,8 @@ static int (*write_out) (uint8_t* buff, size_t len);
 int fs_init(int (*read_fun) (uint8_t* buff, size_t len), int (*write_fun) (uint8_t* buff, size_t len)) {
     read_out = read_fun;
     write_out = write_fun;
+
+    current_flight_len++;
 
     return 0;
 }
@@ -45,7 +48,20 @@ int fs_read(int flight_num) {
  * Writes data into a buffer
  * @return status code
  */
-int fs_write(int len) {
+int fs_write(char *data, size_t len) {
+    char *sub_buffer = buffer + buffer_index;
+
+    for (int i = 0; i < len; i++) {
+        sub_buffer = data + i;
+
+        sub_buffer++;
+        buffer_index++;
+
+        if (buffer_index >= 512) {
+            fs_dump();
+            *sub_buffer = *buffer;
+        }
+    }
 
     return 0;
 }
@@ -55,7 +71,8 @@ int fs_write(int len) {
  * @return status code
  */
 int fs_dump() {
-
+    write_out(buffer, buffer_index); // TODO: Handle err
+    buffer_index = 0;
 
     return 0;
 }
