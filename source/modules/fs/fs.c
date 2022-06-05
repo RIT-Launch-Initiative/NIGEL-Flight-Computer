@@ -6,20 +6,20 @@
 #define INDEX_PAGE 0
 
 static char *flights;
-static int num_flights = 0;
-static int num_pages = 0;
+static uint32_t num_flights = 0;
+static uint32_t num_pages = 0;
 static char *buffer;
-static int buffer_index = 0;
+static uint32_t buffer_index = 0;
 static int current_flight_len = -1;
 
-static int (*read_out) (uint8_t* buff, size_t len);
-static int (*write_out) (uint8_t* buff, size_t len);
+static uint32_t (*read_out) (uint8_t* buff, size_t len);
+static uint32_t (*write_out) (uint8_t* buff, size_t len);
 
 /**
  * Initialize the fs
  * @return status code
  */
-int fs_init(int (*read_fun) (uint8_t* buff, size_t len), int (*write_fun) (uint8_t* buff, size_t len)) {
+int fs_init(uint32_t (*read_fun) (uint8_t* buff, size_t len), uint32_t (*write_fun) (uint8_t* buff, size_t len)) {
     read_out = read_fun;
     write_out = write_fun;
 
@@ -28,14 +28,14 @@ int fs_init(int (*read_fun) (uint8_t* buff, size_t len), int (*write_fun) (uint8
     return 0;
 }
 
-int fs_read(int flight_num) {
+int fs_read(uint32_t flight_num) {
     if (flight_num > num_flights) {
         return 1;
     }
 
     char *start_flight = flights + (num_flights - 1);
     char *end_flight = flights + num_flights;
-    int len_flight = end_flight - start_flight;
+    uint32_t len_flight = end_flight - start_flight;
     uint8_t flight_buff[len_flight];
 
     for (int i = 0; i < len_flight; i++) {

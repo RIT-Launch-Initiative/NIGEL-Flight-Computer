@@ -13,7 +13,7 @@
  * Initialize the fs
  * @return status code
  */
-int fs_init(int (*read_fun) (uint8_t* buff, size_t len), int (*write_fun) (uint8_t* buff, size_t len));
+int fs_init(uint32_t (*read_fun) (uint8_t* buff, size_t len), uint32_t (*write_fun) (uint8_t* buff, size_t len));
 
 /**
  * Writes data into a buffer
@@ -26,7 +26,7 @@ int fs_write(char *data, size_t len);
  *
  * @return
  */
-int fs_read(int flight_num);
+int fs_read(uint32_t flight_num);
 
 
 /**
