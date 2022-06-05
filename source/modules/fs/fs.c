@@ -3,14 +3,14 @@
 #include "hashmap.h"
 
 #define FILE_LIMIT 5 // TODO: Change this :)
-#define INDEX_PAGE 0
+#define DESCRIPTOR_PAGE 0
 
 static char *flights;
 static uint32_t num_flights = 0;
 static uint32_t num_pages = 0;
 static char *buffer;
 static uint32_t buffer_index = 0;
-static int current_flight_len = -1;
+static size_t current_flight_len = -1;
 
 static uint32_t (*read_out) (uint8_t* buff, size_t len);
 static uint32_t (*write_out) (uint8_t* buff, size_t len);
@@ -59,6 +59,7 @@ int fs_write(char *data, size_t len) {
 
         sub_buffer++;
         buffer_index++;
+        current_flight_len++;
 
         if (buffer_index >= 512) {
             fs_dump();
