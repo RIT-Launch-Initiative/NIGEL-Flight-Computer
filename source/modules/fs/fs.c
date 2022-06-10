@@ -11,7 +11,7 @@
 
 #define FS_BUFF_SIZE 512
 
-static char *flights;
+static uint32_t *flights;
 static uint32_t *buffer;
 static uint8_t num_writes_page = 0;
 static uint32_t num_flights = 0;
@@ -40,8 +40,8 @@ int fs_read(uint32_t flight_num) {
         return 1;
     }
 
-    char *start_flight = flights + (num_flights - 1);
-    char *end_flight = flights + num_flights;
+    uint32_t *start_flight = flights + (num_flights - 1);
+    uint32_t *end_flight = flights + num_flights;
     uint32_t len_flight = end_flight - start_flight;
     uint8_t flight_buff[len_flight];
 
