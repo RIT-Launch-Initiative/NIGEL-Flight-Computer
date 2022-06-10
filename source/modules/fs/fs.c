@@ -15,7 +15,8 @@ static uint32_t *flights;
 static uint32_t *buffer;
 static uint8_t num_writes_page = 0;
 static uint32_t num_flights = 0;
-static uint32_t num_pages = 1;
+static uint32_t flight_size = 0;
+static uint32_t page_num = 1;
 static uint32_t buffer_index = 0;
 static size_t current_flight_len = -1;
 
@@ -83,14 +84,16 @@ int fs_write(uint32_t *data, size_t len) {
  * @return status code
  */
 int fs_dump() {
-    write_out(num_pages, buffer, buffer_index); // TODO: Handle err
+    write_out(page_num, buffer, buffer_index); // TODO: Handle err
+
+    flight_size += buffer_index;
     buffer_index = 0;
 
     num_writes_page++;
 
     if (num_writes_page >= (FS_PAGE_SIZE / FS_BUFF_SIZE)) {
         num_writes_page = 0;
-        num_pages++;
+        page_num++;
     }
 
     return 0;
@@ -105,6 +108,7 @@ int fs_close() {
         fs_dump();
     }
 
+    write_out(DESCRIPTOR_PAGE, &flight_size, current_flight_len);
 
     num_flights++;
 
