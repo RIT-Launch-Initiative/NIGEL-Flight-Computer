@@ -5,21 +5,28 @@
 #define FILE_LIMIT 5 // TODO: Change this :)
 #define DESCRIPTOR_PAGE 0
 
+#ifndef FS_PAGE_SIZE
+#define FS_PAGE_SIZE 4096
+#endif
+
+#define FS_BUFF_SIZE 512
+
 static char *flights;
-static uint32_t num_flights = 0;
-static uint32_t num_pages = 0;
 static char *buffer;
+static uint8_t num_writes_page = 0;
+static uint32_t num_flights = 0;
+static uint32_t num_pages = 1;
 static uint32_t buffer_index = 0;
 static size_t current_flight_len = -1;
 
 static uint32_t (*read_out) (uint8_t* buff, size_t len);
-static uint32_t (*write_out) (uint8_t* buff, size_t len);
+static uint32_t (*write_out) (uint32_t page_num, uint8_t* buff, size_t len);
 
 /**
  * Initialize the fs
  * @return status code
  */
-int fs_init(uint32_t (*read_fun) (uint8_t* buff, size_t len), uint32_t (*write_fun) (uint8_t* buff, size_t len)) {
+int fs_init(uint32_t (*read_fun) (uint8_t* buff, size_t len), uint32_t (*write_fun) (uint32_t page_num, uint8_t *buff, size_t len)) {
     read_out = read_fun;
     write_out = write_fun;
 
@@ -61,7 +68,7 @@ int fs_write(char *data, size_t len) {
         buffer_index++;
         current_flight_len++;
 
-        if (buffer_index >= 512) {
+        if (buffer_index >= FS_BUFF_SIZE) {
             fs_dump();
             *sub_buffer = *buffer;
         }
@@ -75,8 +82,15 @@ int fs_write(char *data, size_t len) {
  * @return status code
  */
 int fs_dump() {
-    write_out(buffer, buffer_index); // TODO: Handle err
+    write_out(num_pages, buffer, buffer_index); // TODO: Handle err
     buffer_index = 0;
+
+    num_writes_page++;
+
+    if (num_writes_page >= (FS_PAGE_SIZE / FS_BUFF_SIZE)) {
+        num_writes_page = 0;
+        num_pages++;
+    }
 
     return 0;
 }
