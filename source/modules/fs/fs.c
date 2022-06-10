@@ -9,9 +9,9 @@
 #define FS_PAGE_SIZE 4096
 #endif
 
-#define FS_BUFF_SIZE 512
+#define FS_BUFF_LIMIT 512
 
-static uint32_t *flights;
+static uint32_t *flights; // Descriptor: Stores the start of each flight
 static uint32_t *buffer;
 static uint8_t num_writes_page = 0;
 static uint32_t num_flights = 0;
@@ -48,7 +48,7 @@ int fs_read(uint32_t flight_num) {
     uint32_t *start_flight = flights + (num_flights - 1);
     uint32_t *end_flight = flights + num_flights;
     uint32_t len_flight = end_flight - start_flight;
-    uint8_t flight_buff[len_flight];
+    uint32_t flight_buff[len_flight + 1];
 
     for (int i = 0; i < len_flight; i++) {
         flight_buff[i] = *start_flight + i;
@@ -68,7 +68,7 @@ int fs_write(uint32_t *data, size_t len) {
         return 1;
     }
 
-    uint32_t *sub_buffer = buffer + buffer_index;
+    uint32_t *sub_buffer;
 
     for (int i = 0; i < len; i++) {
         sub_buffer = data + i;
@@ -77,7 +77,7 @@ int fs_write(uint32_t *data, size_t len) {
         buffer_index++;
         current_flight_len++;
 
-        if (buffer_index >= FS_BUFF_SIZE) {
+        if (buffer_index >= FS_BUFF_LIMIT) {
             fs_dump();
             *sub_buffer = *buffer;
             buffer_index = 0;
@@ -99,7 +99,7 @@ int fs_dump() {
 
     num_writes_page++;
 
-    if (num_writes_page >= (FS_PAGE_SIZE / FS_BUFF_SIZE)) {
+    if (num_writes_page >= (FS_PAGE_SIZE / FS_BUFF_LIMIT)) {
         num_writes_page = 0;
         page_num++;
     }
