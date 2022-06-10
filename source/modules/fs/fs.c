@@ -12,7 +12,7 @@
 #define FS_BUFF_SIZE 512
 
 static char *flights;
-static char *buffer;
+static uint8_t *buffer;
 static uint8_t num_writes_page = 0;
 static uint32_t num_flights = 0;
 static uint32_t num_pages = 1;
