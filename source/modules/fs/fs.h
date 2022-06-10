@@ -19,7 +19,7 @@ int fs_init(uint32_t (*read_fun) (uint8_t* buff, size_t len), uint32_t (*write_f
  * Writes data into a buffer
  * @return status code
  */
-int fs_write(char *data, size_t len);
+int fs_write(uint32_t *data, size_t len);
 
 /**
  * Reads data out from specific flight

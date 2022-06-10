@@ -12,7 +12,7 @@
 #define FS_BUFF_SIZE 512
 
 static char *flights;
-static uint8_t *buffer;
+static uint32_t *buffer;
 static uint8_t num_writes_page = 0;
 static uint32_t num_flights = 0;
 static uint32_t num_pages = 1;
@@ -58,8 +58,8 @@ int fs_read(uint32_t flight_num) {
  * Writes data into a buffer
  * @return status code
  */
-int fs_write(char *data, size_t len) {
-    char *sub_buffer = buffer + buffer_index;
+int fs_write(uint32_t *data, size_t len) {
+    uint32_t *sub_buffer = buffer + buffer_index;
 
     for (int i = 0; i < len; i++) {
         sub_buffer = data + i;
@@ -71,6 +71,7 @@ int fs_write(char *data, size_t len) {
         if (buffer_index >= FS_BUFF_SIZE) {
             fs_dump();
             *sub_buffer = *buffer;
+            buffer_index = 0;
         }
     }
 
