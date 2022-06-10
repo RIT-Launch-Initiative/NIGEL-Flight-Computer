@@ -20,7 +20,7 @@ static uint32_t page_num = 1;
 static uint32_t buffer_index = 0;
 static size_t current_flight_len = -1;
 
-static uint32_t (*read_out)(uint8_t *buff, size_t len);
+static uint32_t (*read_out)(uint32_t *buff, size_t len);
 
 static uint32_t (*write_out)(uint32_t page_num, uint32_t *buff, size_t len);
 
@@ -28,10 +28,12 @@ static uint32_t (*write_out)(uint32_t page_num, uint32_t *buff, size_t len);
  * Initialize the fs
  * @return status code
  */
-int fs_init(uint32_t (*read_fun)(uint8_t *buff, size_t len),
+int fs_init(uint32_t (*read_fun)(uint32_t *buff, size_t len),
             uint32_t (*write_fun)(uint32_t page_num, uint32_t *buff, size_t len)) {
     read_out = read_fun;
     write_out = write_fun;
+
+    fs_load();
 
     current_flight_len++;
 
@@ -62,6 +64,10 @@ int fs_read(uint32_t flight_num) {
  * @return status code
  */
 int fs_write(uint32_t *data, size_t len) {
+    if (current_flight_len < 0) {
+        return 1;
+    }
+
     uint32_t *sub_buffer = buffer + buffer_index;
 
     for (int i = 0; i < len; i++) {
@@ -102,6 +108,16 @@ int fs_dump() {
 }
 
 /**
+ * Load descriptor page data into memory
+ * @return status code
+ */
+int fs_load() {
+    read_out(flights, FS_PAGE_SIZE);
+
+    return 0;
+}
+
+/**
  * Cleanup
  * @return status code
  */
@@ -110,7 +126,7 @@ int fs_close() {
         fs_dump();
     }
 
-    write_out(DESCRIPTOR_PAGE, &flight_size, current_flight_len);
+    write_out(DESCRIPTOR_PAGE, &flight_size, 8);
 
     num_flights++;
 
