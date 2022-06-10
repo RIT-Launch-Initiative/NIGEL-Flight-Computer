@@ -20,14 +20,16 @@ static uint32_t page_num = 1;
 static uint32_t buffer_index = 0;
 static size_t current_flight_len = -1;
 
-static uint32_t (*read_out) (uint8_t* buff, size_t len);
-static uint32_t (*write_out) (uint32_t page_num, uint32_t* buff, size_t len);
+static uint32_t (*read_out)(uint8_t *buff, size_t len);
+
+static uint32_t (*write_out)(uint32_t page_num, uint32_t *buff, size_t len);
 
 /**
  * Initialize the fs
  * @return status code
  */
-int fs_init(uint32_t (*read_fun) (uint8_t* buff, size_t len), uint32_t (*write_fun) (uint32_t page_num, uint32_t *buff, size_t len)) {
+int fs_init(uint32_t (*read_fun)(uint8_t *buff, size_t len),
+            uint32_t (*write_fun)(uint32_t page_num, uint32_t *buff, size_t len)) {
     read_out = read_fun;
     write_out = write_fun;
 
@@ -111,7 +113,6 @@ int fs_close() {
     write_out(DESCRIPTOR_PAGE, &flight_size, current_flight_len);
 
     num_flights++;
-
 
 
     return 0;
